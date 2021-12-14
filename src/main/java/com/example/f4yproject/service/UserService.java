@@ -29,20 +29,5 @@ public class UserService {
         return userRepository.findUserByUsername(username);
     }
 
-    //TODO: Login
-
-    public Boolean registerUser(User user){
-
-        //IF Username is already exists ; return false
-        if( this.getUserByUsername(user.getUsername()) == null) return false;
-
-        //IF Password is empty ; return false
-        if( user.getPassword().equals("") ) return false;
-
-        userRepository.save(user);
-        return true;
-
-    }
-
 
 }
