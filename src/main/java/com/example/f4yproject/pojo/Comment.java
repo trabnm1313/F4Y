@@ -13,7 +13,7 @@ public class Comment implements Serializable {
 
     @Id
     String _id;
-    String ThreadID;
+    String threadID;
     String ownerID;
     String message;
     Boolean isEdited;
@@ -21,7 +21,7 @@ public class Comment implements Serializable {
 
     public Comment(String _id, String threadID, String ownerID, String message, Boolean isEdited, Date timeStamp) {
         this._id = _id;
-        ThreadID = threadID;
+        this.threadID = threadID;
         this.ownerID = ownerID;
         this.message = message;
         this.isEdited = isEdited;
