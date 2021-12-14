@@ -1,0 +1,23 @@
+body {
+    background-color: #041C32;
+}
+
+.font {
+    font-family: Prompt;
+    font-weight: bold;
+}
+
+.div{
+    background-color: black;
+}
+
+.b1 {
+    color: #000;
+    background-color: #ECB365;
+}
+
+.b2 {
+    color: #fff;
+    font-weight: normal;
+    background-color: #041C32;
+}
