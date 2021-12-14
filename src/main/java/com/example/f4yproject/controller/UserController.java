@@ -11,9 +11,9 @@ public class UserController {
         System.out.println(user.toString());
     }
 
-    @RequestMapping(value = "/signup/{username}/{password}", method = RequestMethod.GET)
-    public void userSignUp(@PathVariable("username") String username,
-                           @PathVariable("password") String password) {
+    @RequestMapping(value = "/signup/{username}/{password}", method = RequestMethod.POST)
+    public void userSignUp(@RequestParam("username") String username,
+                           @RequestParam("password") String password) {
         System.out.println(username);
         System.out.println(password);
     }
