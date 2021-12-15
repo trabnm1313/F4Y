@@ -60,7 +60,6 @@ public class UserService {
     }
 
     public User authenticate(String authKey){
-
         return userRepository.findUserByID(authKey);
     }
 
