@@ -14,6 +14,7 @@ public class Thread implements Serializable {
 
     @Id
     String _id;
+    String ownerID;
     String topic;
     String message;
     Date timeStamp;
