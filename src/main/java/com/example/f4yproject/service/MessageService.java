@@ -5,24 +5,41 @@ import com.example.f4yproject.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class MessageService {
 
     @Autowired
     MessageRepository messageRepository;
 
-    public List<Message> getAllMessage(){
-        return messageRepository.findAll();
+    public Message createMessage(Message message){
+
+        //IF _id is exists then it's UPDATE not CREATE
+        if(message.get_id() != null) return null;
+
+        return messageRepository.save(message);
     }
 
-    public Message getMessageByID(String ID){
-        return messageRepository.findMessageByID(ID);
+    public Message updateMessage(Message message){
+
+        //IF _id is not exists then it's CREATE not UPDATE
+        if(message.get_id() == null) return null;
+
+        return messageRepository.save(message);
     }
 
-    public Message getMessageByTopic(String topic){
-        return messageRepository.findMessageByTopic(topic);
+    public boolean deleteMessage(Message message){
+
+        boolean isDeleted;
+
+        try{
+            messageRepository.delete(message);
+            isDeleted = true;
+        }catch(Exception e){
+            e.printStackTrace();
+            isDeleted = false;
+        }
+
+        return isDeleted;
     }
 
 }

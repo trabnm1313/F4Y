@@ -9,12 +9,15 @@ import org.springframework.stereotype.Repository;
 public interface UserRepository extends MongoRepository<User, User> {
 
     @Query(value = "{_id: '?0'}")
-    public User findUserByID(String ID);
+    User findUserByID(String ID);
 
     @Query(value = "{username: '?0'}")
-    public User findUserByUsername(String username);
+    User findUserByUsername(String username);
 
     @Query(value = "{nickname: '?0'}")
-    public User findUserByNickName(String nickname);
+    User findUserByNickName(String nickname);
+
+    @Query(value = "{username: '?0', password: '?1'}")
+    User login(String username, String password);
 
 }
