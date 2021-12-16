@@ -4,7 +4,10 @@ import com.example.f4yproject.pojo.User;
 import com.example.f4yproject.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 public class UserController {
@@ -12,15 +15,13 @@ public class UserController {
     private UserService userService;
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ResponseEntity<?> userLogin(@RequestBody User user) {
+    public ResponseEntity<?> userSignup(@RequestBody User user) {
         return ResponseEntity.ok(userService.createUser(user));
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public void userSignUp(@RequestParam("username") String username,
-                           @RequestParam("password") String password) {
-        System.out.println(username);
-        System.out.println(password);
+    public String userLogin(@RequestBody Map<String, String> value) {
+        return userService.login(value.get("username"), value.get("password"));
     }
 
     @RequestMapping(value = "/updateUser", method = RequestMethod.POST)

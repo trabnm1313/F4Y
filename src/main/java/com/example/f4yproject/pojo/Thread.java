@@ -18,12 +18,16 @@ public class Thread implements Serializable {
     String topic;
     String message;
     Integer like;
+    Boolean isEdited;
     Date timeStamp;
 
-    public Thread(String _id, String topic, String message, Date timeStamp) {
+    public Thread(String _id, String ownerID, String topic, String message, Integer like, Boolean isEdited, Date timeStamp) {
         this._id = _id;
+        this.ownerID = ownerID;
         this.topic = topic;
         this.message = message;
+        this.like = like;
+        this.isEdited = isEdited;
         this.timeStamp = timeStamp;
     }
 }
