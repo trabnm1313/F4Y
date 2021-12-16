@@ -19,6 +19,12 @@ public class ThreadController {
         System.out.println(threads.toString());
     }
 
+    @RequestMapping(value = "/getThread/byTopic/{id}", method = RequestMethod.GET)
+    public void getThreadByID(@PathVariable("id") String id) {
+        Thread thread = threadService.getThreadByID(id);
+        System.out.println(thread.toString());
+    }
+
     @RequestMapping(value = "/getThread/byTopic/{topic}", method = RequestMethod.GET)
     public void getThreadByTopic(@PathVariable("topic") String topic) {
         Thread thread = threadService.getThreadByTopic(topic);

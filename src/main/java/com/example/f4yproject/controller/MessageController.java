@@ -22,6 +22,12 @@ public class MessageController {
         System.out.println(messages.toString());
     }
 
+    @RequestMapping(value = "/getMessage/byID/{id}", method = RequestMethod.GET)
+    public void getMessageByID(@PathVariable("id") String id) {
+        Message message = messageService.getMessageByID(id);
+        System.out.println(message.toString());
+    }
+
     @RequestMapping(value = "/getMessage/byTopic/{topic}", method = RequestMethod.GET)
     public void getMessageByTopic(@PathVariable("topic") String topic) {
         Message message = messageService.getMessageByTopic(topic);

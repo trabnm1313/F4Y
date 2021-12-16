@@ -19,8 +19,14 @@ public class UserController {
         System.out.println(users.toString());
     }
 
-    @RequestMapping(value = "/getUser/byNickName/{nickname}", method = RequestMethod.GET)
-    public void getUserByNickName(@PathVariable("nickname") String nickname) {
+    @RequestMapping(value = "/getUser/byID/{id}", method = RequestMethod.GET)
+    public void getUserByID(@PathVariable("id") String id) {
+        User user = userService.getUserByID(id);
+        System.out.println(user.toString());
+    }
+
+    @RequestMapping(value = "/getUser/byNickname/{nickname}", method = RequestMethod.GET)
+    public void getUserByNickname(@PathVariable("nickname") String nickname) {
         User user = userService.getUserByNickName(nickname);
         System.out.println(user.toString());
     }
