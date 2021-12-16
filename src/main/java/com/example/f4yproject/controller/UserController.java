@@ -2,6 +2,7 @@ package com.example.f4yproject.controller;
 
 import com.example.f4yproject.pojo.User;
 import com.example.f4yproject.service.UserService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -20,8 +21,10 @@ public class UserController {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public String userLogin(@RequestBody Map<String, String> value) {
-        return userService.login(value.get("username"), value.get("password"));
+    public String userLogin(@RequestBody MultiValueMap<String, String> value) {
+        Map<String, String> singleValue = value.toSingleValueMap();
+
+        return userService.login(singleValue.get("username"), singleValue.get("password"));
     }
 
     @RequestMapping(value = "/updateUser", method = RequestMethod.POST)
