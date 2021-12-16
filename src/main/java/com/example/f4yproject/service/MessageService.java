@@ -5,6 +5,7 @@ import com.example.f4yproject.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 
 @Service
@@ -21,8 +22,8 @@ public class MessageService {
         return messageRepository.findMessageByID(ID);
     }
 
-    public Message getMessageByTopic(String topic){
-        return messageRepository.findMessageByTopic(topic);
+    public List<Message> getAllMessageByTopic(String topic, Instant since){
+        return messageRepository.findAllMessageByTopic(topic, since);
     }
 
 }

@@ -20,9 +20,9 @@ public class UserController {
     }
 
     @RequestMapping(value = "/getUser/byID/{id}", method = RequestMethod.GET)
-    public void getUserByID(@PathVariable("id") String id) {
+    public User getUserByID(@PathVariable("id") String id) {
         User user = userService.getUserByID(id);
-        System.out.println(user.toString());
+        return user;
     }
 
     @RequestMapping(value = "/getUser/byNickname/{nickname}", method = RequestMethod.GET)
