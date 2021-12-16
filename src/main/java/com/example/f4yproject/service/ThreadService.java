@@ -5,24 +5,41 @@ import com.example.f4yproject.repository.ThreadRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class ThreadService {
 
     @Autowired
     ThreadRepository threadRepository;
 
-    public List<Thread> getAllThread(){
-        return threadRepository.findAll();
+    public Thread createThread(Thread thread){
+
+        //IF _id is exists then it's UPDATE not CREATE
+        if(thread.get_id() != null) return null;
+
+        return threadRepository.save(thread);
     }
 
-    public Thread getThreadByID(String ID){
-        return threadRepository.findThreadByID(ID);
+    public Thread updateThread(Thread thread){
+
+        //IF _id is exists then it's CREATE not UPDATE
+        if(thread.get_id() == null) return null;
+
+        return threadRepository.save(thread);
     }
 
-    public Thread getThreadByTopic(String topic){
-        return threadRepository.findThreadByTopic(topic);
+    public boolean deleteThread(Thread thread){
+
+        boolean isDeleted;
+
+        try{
+            threadRepository.delete(thread);
+            isDeleted = true;
+        }catch(Exception e){
+            e.printStackTrace();
+            isDeleted = false;
+        }
+
+        return isDeleted;
     }
 
 }
