@@ -12,12 +12,12 @@ public class UserController {
     private UserService userService;
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ResponseEntity<?> userLogin(@RequestBody User user) {
+    public ResponseEntity<?> userSignUp(@RequestBody User user) {
         return ResponseEntity.ok(userService.createUser(user));
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public void userSignUp(@RequestParam("username") String username,
+    public void userLogin(@RequestParam("username") String username,
                            @RequestParam("password") String password) {
         System.out.println(username);
         System.out.println(password);
