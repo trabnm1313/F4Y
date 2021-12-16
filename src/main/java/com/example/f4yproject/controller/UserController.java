@@ -22,7 +22,8 @@ public class UserController {
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
     public String userLogin(@RequestBody MultiValueMap<String, String> value) {
-        return userService.login(value);
+        Map<String, String> singleValue = value.toSingleValueMap();
+        return userService.login(singleValue.get("username"), singleValue.get("password"));
     }
 
     @RequestMapping(value = "/updateUser", method = RequestMethod.POST)
