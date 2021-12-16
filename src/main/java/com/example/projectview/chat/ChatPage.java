@@ -1,15 +1,29 @@
 package com.example.projectview.chat;
 
-import com.vaadin.flow.component.avatar.Avatar;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vaadin.collaborationengine.CollaborationMessage;
+import com.vaadin.collaborationengine.CollaborationMessageList;
+import com.vaadin.collaborationengine.CollaborationMessagePersister;
+import com.vaadin.collaborationengine.UserInfo;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.shared.Registration;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Stream;
 
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet into the global scope
@@ -19,9 +33,15 @@ import com.vaadin.flow.theme.Theme;
 // Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
 
+@Push
 @Route("chat/test1")
 public class ChatPage extends VerticalLayout {
+
+    UserInfo userInfo = new UserInfo("61bb6569beade80eafd49021", "User1", null);
+    JsonNode msg;
+
     public ChatPage() {
+
         setSizeFull();
         setPadding(false);
         setSpacing(false);
@@ -31,28 +51,79 @@ public class ChatPage extends VerticalLayout {
         l1.addClassName("font");
         l1.addClassName("header-Text");
 
-        Label msg1 = new Label("สวัสดี พอจะมีเวลาว่างซัก 2 - 3 ชม ต่อวันไหม?");
-        msg1.addClassName("font");
-        msg1.addClassName("message");
+        VerticalLayout vl = new VerticalLayout();
+        HorizontalLayout hl = new HorizontalLayout();
+        HorizontalLayout hl2 = new HorizontalLayout();
 
-        Label msg2 = new Label("เสือกเลยไอ่สัส ไม่ต้องมายุ่งกะกู");
-        msg2.addClassName("font");
-        msg2.addClassName("message");
+        CollaborationMessageList collaborationMessageList = new CollaborationMessageList(userInfo, "FirstTopic", new CollaborationMessagePersister() {
+            @Override
+            public Stream<CollaborationMessage> fetchMessages(FetchQuery fetchQuery) {
+                msg = WebClient.create().get().uri("http://localhost:9091/getMessage/byTopic/" + fetchQuery.getTopicId() + "/" + fetchQuery.getSince()).retrieve().bodyToMono(JsonNode.class).block();
 
-        Avatar a1 = new Avatar();
-        a1.addClassName("avatar");
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new JavaTimeModule());
+                List<Message> msgList = objectMapper.convertValue(msg, new TypeReference<List<Message>>() {});
 
-        Avatar a2 = new Avatar();
-        a2.addClassName("avatar");
+                return msgList.stream().map(message -> {
+                    JsonNode userObject = WebClient.create().get().uri("http://localhost:9091/getUser/byID/" + message.getUserID()).retrieve().bodyToMono(JsonNode.class).block();
+                    User user = objectMapper.convertValue(userObject, new TypeReference<User>() {});
+                    UserInfo userInfo = new UserInfo(message.getUserID(), user.getUsername(), null);
+                    return new CollaborationMessage(userInfo, message.getText(), message.getTimeStamp());
+                });
+            }
+
+            @Override
+            public void persistMessage(PersistRequest persistRequest) {
+                CollaborationMessage message = persistRequest.getMessage();
+
+                Message messageEntity = new Message();
+                messageEntity.setTopic(persistRequest.getTopicId());
+                messageEntity.setText(message.getText());
+                messageEntity.setUserID(message.getUser().getId());
+                messageEntity.setTimeStamp(message.getTime());
+
+                WebClient.create().post().uri("http://localhost:9090/createMessage").body(Mono.just(messageEntity), Message.class).retrieve().bodyToMono(Message.class).block();
+            }
+        });
+
+        TextField field = new TextField();
+        Button button = new Button("Submit");
+        button.setEnabled(false);
+
+        collaborationMessageList.setSubmitter(activationContext -> {
+            button.setEnabled(true);
+            Registration registration = button.addClickListener(event -> {
+                activationContext.appendMessage(field.getValue());
+                field.setValue("");
+            });
+            return () -> {
+                registration.remove();
+                button.setEnabled(false);
+            };
+        });
+
+        hl2.add(field, button);
+        hl2.expand(field);
+        hl2.setWidthFull();
+
+        collaborationMessageList.addClassNames("font", "message");
+
+        hl.setWidth("100%");
+        hl.setHeight("350px");
+        hl.expand(collaborationMessageList);
+
+        vl.setWidth("100%");
+        vl.setHeight("350px");
+        vl.expand(collaborationMessageList);
+
+        hl.add(collaborationMessageList);
+        vl.add(hl, hl2);
 
         TextField msgField = new TextField();
         msgField.setMaxLength(100);
         msgField.setSizeFull();
         msgField.setPlaceholder("ใส่ข้อความที่นี่");
         msgField.addClassName("font");
-
-        Button sendButton = new Button("Send");
-        sendButton.addClassName("b1");
 
         HorizontalLayout header = new HorizontalLayout();
         header.addClassName("header");
@@ -81,16 +152,7 @@ public class ChatPage extends VerticalLayout {
 
         VerticalLayout v2 = new VerticalLayout();
 
-        input.setWidth("100%");
-        input.setPadding(true);
-        input.add(msgField);
-        input.add(sendButton);
-
-        msgBox1.add(a1, msg1);
-        msgBox2.add(msg2, a2);
-
-        v1.add(msgBox1, msgBox2);
-        v2.add(input);
+        v1.add(vl);
 
         header.add(l1);
 
