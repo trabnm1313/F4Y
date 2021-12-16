@@ -17,6 +17,7 @@ public class Thread implements Serializable {
     String ownerID;
     String topic;
     String message;
+    Integer like;
     Date timeStamp;
 
     public Thread(String _id, String topic, String message, Date timeStamp) {
