@@ -14,7 +14,6 @@ public class MessageController {
 
     @RequestMapping(value = "/createMessage", method = RequestMethod.POST)
     public ResponseEntity<?> createMessage(@RequestBody Message message) {
-        System.out.println(message);
         return ResponseEntity.ok(messageService.createMessage(message));
     }
 
