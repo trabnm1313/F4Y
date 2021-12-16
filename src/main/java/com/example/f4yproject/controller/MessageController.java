@@ -2,6 +2,9 @@ package com.example.f4yproject.controller;
 
 import com.example.f4yproject.pojo.Message;
 import com.example.f4yproject.service.MessageService;
+import com.vaadin.collaborationengine.CollaborationMessage;
+import com.vaadin.collaborationengine.CollaborationMessageInput;
+import com.vaadin.collaborationengine.CollaborationMessageList;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
