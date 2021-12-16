@@ -24,19 +24,4 @@ public class ThreadController {
         Thread thread = threadService.getThreadByTopic(topic);
         System.out.println(thread.toString());
     }
-
-    @RequestMapping(value = "/createThread", method = RequestMethod.POST)
-    public void createThread(@RequestBody Thread thread) {
-        System.out.println(thread.toString());
-    }
-
-    @RequestMapping(value = "/updateThread", method = RequestMethod.POST)
-    public void updateThread(@RequestBody Thread thread) {
-        System.out.println(thread.toString());
-    }
-
-    @RequestMapping(value = "/deleteThread", method = RequestMethod.POST)
-    public void deleteThread(@RequestBody Thread thread) {
-        System.out.println(thread.toString());
-    }
 }

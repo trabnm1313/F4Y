@@ -13,19 +13,6 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public void userLogin(@RequestBody User user) {
-        boolean status = userService.registerUser(user);
-        System.out.println(status);
-    }
-
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public void userSignUp(@RequestParam("username") String username,
-                           @RequestParam("password") String password) {
-        System.out.println(username);
-        System.out.println(password);
-    }
-
     @RequestMapping(value = "/getUsers", method = RequestMethod.GET)
     public void getUsers() {
         List<User> users = userService.getAllUser();
