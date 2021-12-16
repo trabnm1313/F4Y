@@ -45,12 +45,7 @@ public class UserService {
         return isDeleted;
     }
 
-    public String login(MultiValueMap<String, String> auth){
-
-        Map<String, String> authValue = auth.toSingleValueMap();
-
-        String username = authValue.get("username");
-        String password = authValue.get("password");
+    public String login(String username, String password){
 
         User user = userRepository.login(username, password);
 

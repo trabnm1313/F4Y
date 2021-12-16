@@ -2,6 +2,7 @@ package com.example.f4yproject.controller;
 
 import com.example.f4yproject.pojo.User;
 import com.example.f4yproject.service.UserService;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.MultiValueMap;
@@ -15,7 +16,7 @@ public class UserController {
     private UserService userService;
 
     @RequestMapping(value = "/signup", method = RequestMethod.POST)
-    public ResponseEntity<?> userSignUp(@RequestBody User user) {
+    public ResponseEntity<?> userSignup(@RequestBody User user) {
         return ResponseEntity.ok(userService.createUser(user));
     }
 
