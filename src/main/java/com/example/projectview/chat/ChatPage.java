@@ -46,6 +46,8 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
     UserInfo userInfo;
     JsonNode msg;
 
+    VerticalLayout v1;
+
     public ChatPage() {
 
         setSizeFull();
@@ -57,6 +59,49 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         l1.addClassName("font");
         l1.addClassName("header-Text");
 
+
+        TextField msgField = new TextField();
+        msgField.setMaxLength(100);
+        msgField.setSizeFull();
+        msgField.setPlaceholder("ใส่ข้อความที่นี่");
+        msgField.addClassName("font");
+
+        HorizontalLayout header = new HorizontalLayout();
+        header.addClassName("header");
+        header.setWidth("100%");
+        header.setPadding(true);
+
+        HorizontalLayout input = new HorizontalLayout();
+        input.addClassName("message-input");
+
+        HorizontalLayout msgBox1 = new HorizontalLayout();
+        msgBox1.addClassName("message-box");
+        msgBox1.setWidth("100%");
+
+        HorizontalLayout msgBox2 = new HorizontalLayout();
+        msgBox2.addClassName("message-box");
+        msgBox2.setWidth("100%");
+        msgBox2.setJustifyContentMode(JustifyContentMode.END);
+
+        VerticalLayout content = new VerticalLayout();
+        content.addClassName("content");
+        content.setWidth("95%");
+
+        v1 = new VerticalLayout();
+        v1.setHeight("100%");
+        v1.setJustifyContentMode(JustifyContentMode.END);
+
+        VerticalLayout v2 = new VerticalLayout();
+
+        header.add(l1);
+
+        content.add(v1, v2);
+
+        add(header, content);
+        expand(content);
+    }
+
+    public void addChat(){
         VerticalLayout vl = new VerticalLayout();
         HorizontalLayout hl = new HorizontalLayout();
         HorizontalLayout hl2 = new HorizontalLayout();
@@ -77,6 +122,7 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
                     return new CollaborationMessage(userInfo, message.getText(), message.getTimeStamp());
                 });
             }
+
 
             @Override
             public void persistMessage(PersistRequest persistRequest) {
@@ -125,47 +171,7 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         hl.add(collaborationMessageList);
         vl.add(hl, hl2);
 
-        TextField msgField = new TextField();
-        msgField.setMaxLength(100);
-        msgField.setSizeFull();
-        msgField.setPlaceholder("ใส่ข้อความที่นี่");
-        msgField.addClassName("font");
-
-        HorizontalLayout header = new HorizontalLayout();
-        header.addClassName("header");
-        header.setWidth("100%");
-        header.setPadding(true);
-
-        HorizontalLayout input = new HorizontalLayout();
-        input.addClassName("message-input");
-
-        HorizontalLayout msgBox1 = new HorizontalLayout();
-        msgBox1.addClassName("message-box");
-        msgBox1.setWidth("100%");
-
-        HorizontalLayout msgBox2 = new HorizontalLayout();
-        msgBox2.addClassName("message-box");
-        msgBox2.setWidth("100%");
-        msgBox2.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout content = new VerticalLayout();
-        content.addClassName("content");
-        content.setWidth("95%");
-
-        VerticalLayout v1 = new VerticalLayout();
-        v1.setHeight("100%");
-        v1.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout v2 = new VerticalLayout();
-
         v1.add(vl);
-
-        header.add(l1);
-
-        content.add(v1, v2);
-
-        add(header, content);
-        expand(content);
     }
 
     @Override
@@ -181,14 +187,15 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
                     .block();
 
             this.nowUser = user;
-            this.userInfo = new UserInfo(nowUser.get_id(), nowUser.getNickname(), null);
+            this.userInfo = new UserInfo(user.get_id(), user.getNickname(), null);
+
+            addChat();
 
         } catch (Exception error) {
             Notification noti1 = new Notification("Please Login");
             noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
             noti1.open();
             noti1.setDuration(3000);
-            System.out.println("WHY");
             beforeEnterEvent.rerouteTo(LoginPage.class);
         }
     }
