@@ -33,4 +33,10 @@ public class ThreadController {
         System.out.println(thread.toString());
         return thread;
     }
+
+    @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.GET)
+    public Thread likeThread(@PathVariable("id") String id) {
+        Thread thread = threadService.getThreadByID(id);
+        return thread;
+    }
 }
