@@ -4,6 +4,8 @@ import com.example.f4yproject.pojo.Thread;
 import com.example.f4yproject.service.ThreadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -35,8 +37,16 @@ public class ThreadController {
     }
 
     @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.GET)
-    public Thread likeThread(@PathVariable("id") String id) {
+    public int likeThread(@PathVariable("id") String id) {
         Thread thread = threadService.getThreadByID(id);
-        return thread;
+        thread.setLike(thread.getLike() + 1);
+        Thread out = WebClient.create()
+                .post()
+                .uri("http://localhost:8080/addWizard")
+                .body(Mono.just(thread), Thread.class)
+                .retrieve()
+                .bodyToMono(Thread.class)
+                .block();
+        return thread.getLike();
     }
 }
