@@ -1,5 +1,6 @@
 package com.example.projectview.chat;
 
+import com.example.projectview.login.LoginPage;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -12,10 +13,14 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -34,10 +39,11 @@ import java.util.stream.Stream;
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
 
 @Push
-@Route("chat/test1")
-public class ChatPage extends VerticalLayout {
+@Route("chat/:userID")
+public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
 
-    UserInfo userInfo = new UserInfo("61bb6569beade80eafd49021", "User1", null);
+    User nowUser;
+    UserInfo userInfo;
     JsonNode msg;
 
     public ChatPage() {
@@ -58,14 +64,14 @@ public class ChatPage extends VerticalLayout {
         CollaborationMessageList collaborationMessageList = new CollaborationMessageList(userInfo, "FirstTopic", new CollaborationMessagePersister() {
             @Override
             public Stream<CollaborationMessage> fetchMessages(FetchQuery fetchQuery) {
-                msg = WebClient.create().get().uri("http://localhost:9091/getMessage/byTopic/" + fetchQuery.getTopicId() + "/" + fetchQuery.getSince()).retrieve().bodyToMono(JsonNode.class).block();
+                msg = WebClient.create().get().uri("http://localhost:9090/getMessage/byTopic/" + fetchQuery.getTopicId() + "/" + fetchQuery.getSince()).retrieve().bodyToMono(JsonNode.class).block();
 
                 ObjectMapper objectMapper = new ObjectMapper();
                 objectMapper.registerModule(new JavaTimeModule());
                 List<Message> msgList = objectMapper.convertValue(msg, new TypeReference<List<Message>>() {});
 
                 return msgList.stream().map(message -> {
-                    JsonNode userObject = WebClient.create().get().uri("http://localhost:9091/getUser/byID/" + message.getUserID()).retrieve().bodyToMono(JsonNode.class).block();
+                    JsonNode userObject = WebClient.create().get().uri("http://localhost:9090/getUser/byID/" + message.getUserID()).retrieve().bodyToMono(JsonNode.class).block();
                     User user = objectMapper.convertValue(userObject, new TypeReference<User>() {});
                     UserInfo userInfo = new UserInfo(message.getUserID(), user.getUsername(), null);
                     return new CollaborationMessage(userInfo, message.getText(), message.getTimeStamp());
@@ -82,7 +88,7 @@ public class ChatPage extends VerticalLayout {
                 messageEntity.setUserID(message.getUser().getId());
                 messageEntity.setTimeStamp(message.getTime());
 
-                WebClient.create().post().uri("http://localhost:9090/createMessage").body(Mono.just(messageEntity), Message.class).retrieve().bodyToMono(Message.class).block();
+                WebClient.create().post().uri("http://localhost:9091/createMessage").body(Mono.just(messageEntity), Message.class).retrieve().bodyToMono(Message.class).block();
             }
         });
 
@@ -160,5 +166,30 @@ public class ChatPage extends VerticalLayout {
 
         add(header, content);
         expand(content);
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        String userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+
+        try {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            this.nowUser = user;
+            this.userInfo = new UserInfo(nowUser.get_id(), nowUser.getNickname(), null);
+
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Please Login");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            System.out.println("WHY");
+            beforeEnterEvent.rerouteTo(LoginPage.class);
+        }
     }
 }
