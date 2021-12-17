@@ -17,6 +17,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -78,6 +79,16 @@ public class ProfileEdit extends VerticalLayout implements BeforeEnterObserver {
         btnConfirm.getStyle().set("color", "black");
         btnConfirm.addClassName("font");
 
+        btnConfirm.addClickListener(E -> {
+            User newUserInfo = new User(nowUser.get_id(), username.getValue(), password.getValue(), nickname.getValue(), description.getValue());
+            WebClient.create()
+                    .put()
+                    .uri("http://localhost:9091/updateUser")
+                    .body(Mono.just(newUserInfo), User.class)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+        });
 
         vFieldPassword.add(password, confirmPassword);
         vDetailEdit.add(nickname, description, username, vFieldPassword, btnConfirm);

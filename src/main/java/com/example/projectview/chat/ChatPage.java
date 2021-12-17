@@ -9,6 +9,7 @@ import com.vaadin.collaborationengine.CollaborationMessage;
 import com.vaadin.collaborationengine.CollaborationMessageList;
 import com.vaadin.collaborationengine.CollaborationMessagePersister;
 import com.vaadin.collaborationengine.UserInfo;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -148,8 +149,15 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
                 activationContext.appendMessage(field.getValue());
                 field.setValue("");
             });
+            Registration registration2 = field.addKeyDownListener(E -> {
+                if(E.getKey().getKeys().equals(Key.ENTER.getKeys())){
+                    activationContext.appendMessage(field.getValue());
+                    field.setValue("");
+                }
+            });
             return () -> {
                 registration.remove();
+                registration2.remove();
                 button.setEnabled(false);
             };
         });
