@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field")
 // Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
+@CssImport(value = "components/msg.css", themeFor = "vaadin-message")
 
 @Push
 @Route("chat/:threadID/:userID")
@@ -85,7 +86,6 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
                 });
             }
 
-
             @Override
             public void persistMessage(PersistRequest persistRequest) {
                 CollaborationMessage message = persistRequest.getMessage();
@@ -101,7 +101,9 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         });
 
         TextField field = new TextField();
+        field.setPlaceholder("Type Message");
         Button button = new Button("Submit");
+        button.addClassName("b1");
         button.setEnabled(false);
 
         collaborationMessageList.setSubmitter(activationContext -> {
@@ -130,17 +132,15 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         collaborationMessageList.addClassNames("font", "message");
 
         hl.setWidth("100%");
-        hl.setHeight("350px");
+        hl.setHeight("100%");
         hl.expand(collaborationMessageList);
 
         vl.setWidth("100%");
-        vl.setHeight("350px");
+        vl.setHeight("90%");
         vl.expand(collaborationMessageList);
 
         hl.add(collaborationMessageList);
         vl.add(hl, hl2);
-
-
 
         TextField msgField = new TextField();
         msgField.setMaxLength(100);
@@ -163,23 +163,20 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         HorizontalLayout msgBox2 = new HorizontalLayout();
         msgBox2.addClassName("message-box");
         msgBox2.setWidth("100%");
-        msgBox2.setJustifyContentMode(JustifyContentMode.END);
 
         VerticalLayout content = new VerticalLayout();
         content.addClassName("content");
         content.setWidth("95%");
+        content.setHeight("85%");
 
         VerticalLayout v1 = new VerticalLayout();
         v1.setHeight("100%");
-        v1.setJustifyContentMode(JustifyContentMode.END);
+        v1.setHeightFull();
 
         v1.add(vl);
-
-        VerticalLayout v2 = new VerticalLayout();
-
         header.add(l1);
 
-        content.add(v1, v2);
+        content.add(v1);
 
         add(header, content);
         expand(content);

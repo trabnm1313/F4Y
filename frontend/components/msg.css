@@ -1,0 +1,9 @@
+:host {
+    color: white;
+    font-family: Prompt;
+    font-weight: normal;
+}
+
+[part='time'] {
+    color: #ECB365;
+}

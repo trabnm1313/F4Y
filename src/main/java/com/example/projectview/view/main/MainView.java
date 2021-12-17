@@ -29,6 +29,7 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,8 +112,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
 
         // POST
         vAllPost.getStyle().set("overflow", "auto");
-        vAllPost.setHeight("700px");
-
+        vAllPost.setMaxHeight("800px");
 
         // PROFILE AND NEW POST
         vProfileAndNewPost.setWidth("20%");
@@ -307,12 +307,16 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         /*-----------------------------Event Listener-----------------------------*/
         chatBtn.addClickListener(event -> {
             UI.getCurrent().navigate(ChatPage.class,
-                    new RouteParameters("postID", post.get_id()));
+                    new RouteParameters(
+                            new RouteParam("threadID", post.get_id()),
+                            new RouteParam("userID", nowUser.get_id())));
         });
 
         commentBtn.addClickListener(event -> {
             UI.getCurrent().navigate(ViewPost.class,
-                    new RouteParameters("postID", post.get_id()));
+                    new RouteParameters(
+                            new RouteParam("threadID", post.get_id()),
+                            new RouteParam("userID", nowUser.get_id())));
         });
 
         likeBtn.addClickListener(event -> {

@@ -11,8 +11,12 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -25,10 +29,13 @@ import org.springframework.web.reactive.function.client.WebClient;
 @CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area")
 @CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area[focus]")
 
-@Route("view-profile")
-public class ProfileView extends VerticalLayout {
+@Route("view-profile/:userID")
+public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
     HorizontalLayout hProfile = new HorizontalLayout(); // all profile
     VerticalLayout vPost = new VerticalLayout();
+
+    String userID;
+    User nowUser;
 
     public ProfileView() {
         // Profile
@@ -37,35 +44,9 @@ public class ProfileView extends VerticalLayout {
         VerticalLayout vDetailProfile = new VerticalLayout();
         vDetailProfile.getStyle().set("padding-top", "20%");
         VerticalLayout vAvatar = new VerticalLayout();
-
-    public ProfileView() {}
-
-    private void create() {
-
-        Avatar avatarName = new Avatar(nowUser.getNickname());
-        avatarName.getStyle().set("background-color", "#ECB365");
-        avatarName.setHeight("300px");
-        avatarName.setWidth("300px");
-
-        Label nickname = new Label("Viu");
-        nickname.setClassName("font");
-        Label description = new Label("FolkYou");
-        description.setClassName("font");
-
-        vAvatar.add(avatarName);
-        vDetailProfile.add(nickname, description);
-        hProfile.add(vAvatar, vDetailProfile);
-
-        // Post
-        vPost.getStyle().set("padding-left", "30%");
-        vPost.setWidth("70%");
-        vPost.getElement().getStyle().set("flex-grow", "1");
-
-        add(hProfile, vPost);
     }
 
     private void createPost(String topic, String message, String tag) {
-
         VerticalLayout vPostLayout = new VerticalLayout();
         vPostLayout.getStyle()
                 .set("background-color", "#064663")
@@ -138,7 +119,6 @@ public class ProfileView extends VerticalLayout {
 
             System.out.println(user);
             this.nowUser = user;
-            create();
 
         } catch (Exception error) {
             Notification noti1 = new Notification("Profile Not Found");
