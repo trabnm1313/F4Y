@@ -8,9 +8,6 @@
     color: white;
 }
 
-:hover [part="label"]{
-}
-
 :host([focused]:not([randonly])) [part="label"] {
     color: #ECB365;
 }
