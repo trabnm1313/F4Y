@@ -1,5 +1,6 @@
 package com.example.projectview.view.main;
 
+import com.example.projectview.login.LoginPage;
 import com.example.projectview.model.Thread;
 import com.example.projectview.model.User;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,6 +15,8 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -54,7 +57,6 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     private User nowUser; //data
 
     public MainView() {
-
         // fetch data form db and display
         getAllPost();
         displayAllPost(filterPost(this.selectedTagID));
@@ -170,14 +172,23 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         userID = beforeEnterEvent.getRouteParameters().get("userID").get();
 
-        User user = WebClient.create()
-                .get()
-                .uri("http://localhost:9090/getUser/byID/" + userID)
-                .retrieve()
-                .bodyToMono(User.class)
-                .block();
+        try {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
 
-        this.nowUser = user;
+            this.nowUser = user;
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Please Login");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            beforeEnterEvent.rerouteTo(LoginPage.class);
+        }
+
     }
 
     public void getAllPost() {
@@ -266,7 +277,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     }
 
     private void createThreadInDb(String topic, String message, String tag) {
-        Thread post = new Thread( null, userID, topic, message, 0, false, null, tag);
+        Thread post = new Thread( null, this.nowUser.get_id(), topic, message, 0, false, null, tag);
 
         String res = WebClient.create()
                 .post()
@@ -373,6 +384,8 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                 filtered.add(this.allThread.get(i));
             }  else if (tagID == 12 && this.allThread.get(i).getTag().equals("การ์ตูน")) {
                 filtered.add(this.allThread.get(i));
+            } else {
+                continue;
             }
         }
 
