@@ -327,10 +327,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                     .bodyToMono(String.class)
                     .block();
 
-            System.out.println(res);
         });
-
-
     }
 
     private void createThreadInDb(String topic, String message, String tag) {
