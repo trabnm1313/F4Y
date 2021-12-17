@@ -18,21 +18,18 @@ public class ThreadController {
     @RequestMapping(value = "/getThreads", method = RequestMethod.GET)
     public List<Thread> getThreads() {
         List<Thread> threads = threadService.getAllThread();
-        System.out.println(threads.toString());
         return threads;
     }
 
     @RequestMapping(value = "/getThread/byID/{id}", method = RequestMethod.GET)
     public Thread getThreadByID(@PathVariable("id") String id) {
         Thread thread = threadService.getThreadByID(id);
-        System.out.println(thread.toString());
         return thread;
     }
 
     @RequestMapping(value = "/getThread/byTopic/{topic}", method = RequestMethod.GET)
     public Thread getThreadByTopic(@PathVariable("topic") String topic) {
         Thread thread = threadService.getThreadByTopic(topic);
-        System.out.println(thread.toString());
         return thread;
     }
 
@@ -47,6 +44,7 @@ public class ThreadController {
                 .retrieve()
                 .bodyToMono(Thread.class)
                 .block();
+        System.out.println(thread.getLike());
         return thread.getLike();
     }
 }
