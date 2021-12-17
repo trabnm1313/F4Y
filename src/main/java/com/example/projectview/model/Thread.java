@@ -1,0 +1,31 @@
+package com.example.projectview.model;
+
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import java.io.Serializable;
+import java.util.Date;
+
+@Data
+public class Thread {
+        @Id
+        String _id;
+        String ownerID;
+        String topic;
+        String message;
+        Integer like;
+        Boolean isEdited;
+        Date timeStamp;
+
+        public Thread() {}
+        public Thread(String _id, String ownerID, String topic, String message, Integer like, Boolean isEdited, Date timeStamp) {
+            this._id = _id;
+            this.ownerID = ownerID;
+            this.topic = topic;
+            this.message = message;
+            this.like = like;
+            this.isEdited = isEdited;
+            this.timeStamp = timeStamp;
+        }
+}

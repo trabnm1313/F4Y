@@ -1,5 +1,10 @@
 package com.example.projectview.view.main;
 
+import com.example.projectview.model.Thread;
+import com.example.projectview.model.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -15,10 +20,17 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -29,15 +41,48 @@ import java.util.Date;
 @CssImport(value = "selectItems.css", themeFor = "vaadin-tab")
 @CssImport(value = "my-dialog.css", themeFor = "vaadin-dialog-overlay")
 
-@Route("main")
-public class MainView extends HorizontalLayout {
+@Route("main/:userID")
+public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     VerticalLayout vMenu = new VerticalLayout(); // column-menu
     VerticalLayout vAllPost = new VerticalLayout(); // column-post
     VerticalLayout vProfileAndNewPost = new VerticalLayout(); // column-profile and add post
+    private String userID;
+    private List<Thread> allThread;
 
-    Person person = new Person(null, "Viu", "12374", "Viu", "ไอสัส", "Dec 12");
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+    }
+
+    public void getAllPost() {
+        JsonNode out = WebClient.create()
+                .get()
+                .uri("http://localhost:9090/getThreads")
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        this.allThread = mapper.convertValue(
+                out,
+                new TypeReference<List<Thread>>() {}
+        );
+
+        System.out.println(this.allThread);
+    }
+
+    public void displayAllPost() {
+        Collections.reverse(this.allThread);
+
+        for (int i=0; i < this.allThread.size(); i++) {
+            createPost(allThread.get(i));
+        }
+    }
 
     public MainView() {
+
+        // fetch data form db and display
+        getAllPost();
+        displayAllPost();
 
         // MENU
         Tabs views = getPrimaryNavigation();
@@ -102,7 +147,7 @@ public class MainView extends HorizontalLayout {
         ComboBox<String> listTag = new ComboBox<String>("Tag");
         listTag.setItems("สัตว์","การเรียน","ครอบครัว","การเมือง","การเงิน","สุขภาพ","อาหาร","ท่องเที่ยว","ท่องเที่ยว","รถยนต์","แฟชั่น","การ์ตูน");
 
-        Button addPostBtn = new Button("Add Post", e -> createPost(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
+        Button addPostBtn = new Button("Add Post", e -> createThreadInDb(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
         addPostBtn.getStyle()
                 .set("background-color", "#ECB365")
                 .set("color", "black");
@@ -139,19 +184,20 @@ public class MainView extends HorizontalLayout {
         add(vMenu, vAllPost, vProfileAndNewPost);
     }
 
-    private void createPost(String topic, String message, String tag) {
+    private void createPost(Thread post) {
+        String nickname = getNickname(post.getOwnerID());
 
         VerticalLayout vPostLayout = new VerticalLayout();
         vPostLayout.getStyle()
                 .set("background-color", "#064663")
                 .set("border-radius", "10px");
 
-        Label topicPost = new Label(topic);
+        Label topicPost = new Label(post.getTopic());
         topicPost.getStyle().set("font-size", "25px");
 
-        Label tagPost = new Label('#'+tag);
+        Label tagPost = new Label('#' + post.getOwnerID());
 
-        Span description = new Span(message);
+        Span description = new Span(post.getMessage());
         description.setWidth("100%");
         description.getStyle()
                 .set("overflow", "hidden")
@@ -180,11 +226,11 @@ public class MainView extends HorizontalLayout {
         VerticalLayout vDetailPost = new VerticalLayout(); // add detail post
         VerticalLayout vOnePost = new VerticalLayout(); // add all detail in one post
 
-        Avatar user = new Avatar(person.getNickname());
+        Avatar user = new Avatar(nickname);
         user.setWidth("50px");
         user.setHeight("50px");
 
-        Label nameUser = new Label(person.getNickname());
+        Label nameUser = new Label(nickname);
         nameUser.setWidth("80px");
         nameUser.getStyle()
                 .set("text-align", "center")
@@ -196,7 +242,45 @@ public class MainView extends HorizontalLayout {
         vDetailPost.add(topicPost, tagPost, description); // add detail post
         vPostLayout.add(vDetailPost, vUserPost); // add detail post and user
         vOnePost.add(vPostLayout, hButtonPost); // add all detail
+
         vAllPost.add(vOnePost);
+    }
+
+    private void createThreadInDb(String topic, String message, String tag) {
+        Thread post = new Thread( null, userID, topic, message, 0, false, null);
+
+        String res = WebClient.create()
+                .post()
+                .uri("http://localhost:9091/createThread/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(post), Thread.class)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        System.out.println(res);
+
+        if (res == null) {
+            System.out.println("Error Can't Creating Post");
+            return;
+        }
+
+        vAllPost.removeAll();
+
+        // fetch data form db and display
+        getAllPost();
+        displayAllPost();
+    }
+
+    private String getNickname(String userID) {
+        User user = WebClient.create()
+                .get()
+                .uri("http://localhost:9090/getUser/byID/" + userID)
+                .retrieve()
+                .bodyToMono(User.class)
+                .block();
+
+        return user.getNickname();
     }
 
     private Tabs getPrimaryNavigation() {

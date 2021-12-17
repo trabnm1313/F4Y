@@ -1,17 +1,26 @@
 package com.example.projectview.register;
 
+import com.example.projectview.model.User;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -96,7 +105,32 @@ public class RegisterPage extends VerticalLayout {
         this.add(f1);
 
         registerButton.addClickListener(event -> {
-            UI.getCurrent().navigate("login");
+            if (!passwordField.getValue().equals(confirmPasswordField.getValue())) {
+                Notification noti1 = new Notification("Password not match");
+                noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                noti1.open();
+                noti1.setDuration(3000);
+                return;
+            }
+
+            User user = new User(
+                    null,
+                    usernameField.getValue(),
+                    passwordField.getValue(),
+                    nameField.getValue(),
+                    descriptionField.getValue());
+
+            User res = WebClient.create()
+                    .post()
+                    .uri("http://localhost:9091/signup")
+                    .body(Mono.just(user), User.class)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            System.out.println(res.getUsername());
+
+            UI.getCurrent().navigate("main");
         });
     }
 }
