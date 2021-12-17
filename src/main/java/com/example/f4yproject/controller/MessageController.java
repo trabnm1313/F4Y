@@ -17,12 +17,12 @@ public class MessageController {
         return ResponseEntity.ok(messageService.createMessage(message));
     }
 
-    @RequestMapping(value = "/updateMessage", method = RequestMethod.POST)
+    @RequestMapping(value = "/updateMessage", method = RequestMethod.PUT)
     public ResponseEntity<?> updateMessage(@RequestBody Message message) {
         return ResponseEntity.ok(messageService.updateMessage(message));
     }
 
-    @RequestMapping(value = "/deleteMessage", method = RequestMethod.POST)
+    @RequestMapping(value = "/deleteMessage", method = RequestMethod.DELETE)
     public boolean deleteMessage(@RequestBody Message message) {
         return messageService.deleteMessage(message);
     }
