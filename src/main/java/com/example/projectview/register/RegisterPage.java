@@ -109,8 +109,6 @@ public class RegisterPage extends VerticalLayout {
                     .bodyToMono(User.class)
                     .block();
 
-            System.out.println(user);
-
             if (user != null) {
                 System.out.println("Username is invalid");
                 Notification noti1 = new Notification("Username is invalid");

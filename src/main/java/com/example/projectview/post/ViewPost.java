@@ -213,7 +213,6 @@ public class ViewPost extends HorizontalLayout implements BeforeEnterObserver {
             if (res) {
                 UI.getCurrent().navigate(MainView.class, new RouteParameters("userID", userNow.get_id()));
             }
-            System.out.println(res);
         });
 
         this.add(vPost, vAllComment);

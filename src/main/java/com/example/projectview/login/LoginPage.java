@@ -111,7 +111,6 @@ public class LoginPage extends VerticalLayout {
                 return;
             }
 
-            System.out.println(id);
             UI.getCurrent().navigate(MainView.class,
                     new RouteParameters("userID", id));
         });

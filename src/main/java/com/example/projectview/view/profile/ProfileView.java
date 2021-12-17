@@ -199,8 +199,6 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
                 }
             }
 
-            System.out.println(filtered);
-
             for (int i=0; i<filtered.size(); i++) {
                 createPost(filtered.get(i));
             }
