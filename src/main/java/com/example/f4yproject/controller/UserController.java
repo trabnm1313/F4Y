@@ -14,9 +14,10 @@ public class UserController {
     private UserService userService;
 
     @RequestMapping(value = "/getUsers", method = RequestMethod.GET)
-    public void getUsers() {
+    public List<User> getUsers() {
         List<User> users = userService.getAllUser();
         System.out.println(users.toString());
+        return users;
     }
 
     @RequestMapping(value = "/getUser/byID/{id}", method = RequestMethod.GET)
@@ -27,14 +28,16 @@ public class UserController {
     }
 
     @RequestMapping(value = "/getUser/byNickname/{nickname}", method = RequestMethod.GET)
-    public void getUserByNickname(@PathVariable("nickname") String nickname) {
+    public User getUserByNickname(@PathVariable("nickname") String nickname) {
         User user = userService.getUserByNickName(nickname);
         System.out.println(user.toString());
+        return user;
     }
 
     @RequestMapping(value = "/getUser/byUsername/{username}", method = RequestMethod.GET)
-    public void getUserByUsername(@PathVariable("username") String username) {
+    public User getUserByUsername(@PathVariable("username") String username) {
         User user = userService.getUserByUsername(username);
         System.out.println(user.toString());
+        return user;
     }
 }

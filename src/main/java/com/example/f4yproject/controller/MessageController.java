@@ -20,20 +20,23 @@ public class MessageController {
     private MessageService messageService;
 
     @RequestMapping(value = "/getMessages", method = RequestMethod.GET)
-    public void getMessages() {
+    public List<Message> getMessages() {
         List<Message> messages = messageService.getAllMessage();
         System.out.println(messages.toString());
+        return messages;
     }
 
     @RequestMapping(value = "/getMessage/byID/{id}", method = RequestMethod.GET)
-    public void getMessageByID(@PathVariable("id") String id) {
+    public Message getMessageByID(@PathVariable("id") String id) {
         Message message = messageService.getMessageByID(id);
         System.out.println(message.toString());
+        return message;
     }
 
     @RequestMapping(value = "/getMessage/byTopic/{topic}", method = RequestMethod.GET)
-    public void getMessageByTopic(@PathVariable("topic") String topic) {
+    public Message getMessageByTopic(@PathVariable("topic") String topic) {
         Message message = messageService.getMessageByTopic(topic);
         System.out.println(message.toString());
+        return message;
     }
 }
