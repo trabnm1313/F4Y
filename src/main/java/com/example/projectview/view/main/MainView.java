@@ -1,5 +1,6 @@
 package com.example.projectview.view.main;
 
+import com.example.projectview.view.profile.ProfileEdit;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -15,10 +16,12 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.data.renderer.ComponentRenderer;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
 
 import java.util.Date;
+import java.util.EventListener;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -27,7 +30,7 @@ import java.util.Date;
 @CssImport(value = "textfield.css", themeFor = "vaadin-text-field")
 @CssImport(value = "textfield.css", themeFor = "vaadin-text-field[focus]")
 @CssImport(value = "selectItems.css", themeFor = "vaadin-tab")
-@CssImport(value = "my-dialog.css", themeFor = "vaadin-dialog-overlay")
+@CssImport(value = "./components/combo-box.css", themeFor = "vaadin-combo-box-item")
 
 @Route("main")
 public class MainView extends HorizontalLayout {
@@ -35,7 +38,6 @@ public class MainView extends HorizontalLayout {
     VerticalLayout vAllPost = new VerticalLayout(); // column-post
     VerticalLayout vProfileAndNewPost = new VerticalLayout(); // column-profile and add post
 
-    Person person = new Person(null, "Viu", "12374", "Viu", "ไอสัส", "Dec 12");
 
     public MainView() {
 
@@ -83,6 +85,12 @@ public class MainView extends HorizontalLayout {
         vAllPost.getStyle().set("overflow", "auto");
         vAllPost.setHeight("700px");
 
+
+        // PROFILE AND NEW POST
+        vProfileAndNewPost.setWidth("20%");
+        vProfileAndNewPost.setHeight("100%");
+        vProfileAndNewPost.setMargin(true);
+
         VerticalLayout vUser = new VerticalLayout(); // layout profile
         vUser.getStyle()
                 .set("background-color", "#064663")
@@ -95,25 +103,31 @@ public class MainView extends HorizontalLayout {
 
         TextField titleField = new TextField("Title");
         titleField.setMaxLength(50);
+        titleField.setClassName("font");
 
         TextArea descriptionArea = new TextArea("Description");
         descriptionArea.setMaxLength(500);
+        descriptionArea.setClassName("font");
 
         ComboBox<String> listTag = new ComboBox<String>("Tag");
-        listTag.setItems("สัตว์","การเรียน","ครอบครัว","การเมือง","การเงิน","สุขภาพ","อาหาร","ท่องเที่ยว","ท่องเที่ยว","รถยนต์","แฟชั่น","การ์ตูน");
+        listTag.setItems("สัตว์","การเรียน","ครอบครัว","การเมือง","การเงิน","สุขภาพ","อาหาร","ท่องเที่ยว","รถยนต์","แฟชั่น","การ์ตูน");
+        listTag.setClassName("font");
+        listTag.setRenderer(new ComponentRenderer<>(item -> {
+            Span text = new Span(item);
+                text.setClassName("cb");
+            return text;
+        }));
+        listTag.getElement().setAttribute("theme",
+                "custom-item-background");
 
         Button addPostBtn = new Button("Add Post", e -> createPost(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
         addPostBtn.getStyle()
                 .set("background-color", "#ECB365")
                 .set("color", "black");
         addPostBtn.setWidth("100%");
+        addPostBtn.setClassName("font");
 
         vAddPost.add(titleField, descriptionArea, listTag);
-
-        // PROFILE AND NEW POST
-        vProfileAndNewPost.setWidth("20%");
-        vProfileAndNewPost.setHeight("100%");
-        vProfileAndNewPost.setMargin(true);
 
         Avatar user = new Avatar("Viu");
         user.setWidth("50px");
@@ -130,6 +144,7 @@ public class MainView extends HorizontalLayout {
                 .set("background-color", "#ECB365")
                 .set("color", "black");
         editBtn.setWidth("100%");
+        editBtn.setClassName("font");
 
         HorizontalLayout hDetailUser = new HorizontalLayout(); //layout user in profile
         hDetailUser.add(user, nameUser); // add detail profile
@@ -180,11 +195,11 @@ public class MainView extends HorizontalLayout {
         VerticalLayout vDetailPost = new VerticalLayout(); // add detail post
         VerticalLayout vOnePost = new VerticalLayout(); // add all detail in one post
 
-        Avatar user = new Avatar(person.getNickname());
+        Avatar user = new Avatar();
         user.setWidth("50px");
         user.setHeight("50px");
 
-        Label nameUser = new Label(person.getNickname());
+        Label nameUser = new Label();
         nameUser.setWidth("80px");
         nameUser.getStyle()
                 .set("text-align", "center")
@@ -230,7 +245,9 @@ public class MainView extends HorizontalLayout {
                 .set("padding", "var(--lumo-space-xs)");
 
         RouterLink link = new RouterLink();
-        link.add(icon, new Span(viewName));
+        Span vName = new Span(viewName);
+        vName.getStyle().set("font-family", "Prompt");
+        link.add(icon, vName);
         // Demo has no routes
         // link.setRoute(viewClass.java);
         link.setTabIndex(-1);
