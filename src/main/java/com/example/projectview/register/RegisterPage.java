@@ -148,7 +148,7 @@ public class RegisterPage extends VerticalLayout {
 
             System.out.println(res.getUsername());
 
-            UI.getCurrent().navigate("main");
+            UI.getCurrent().navigate("");
         });
     }
 }
