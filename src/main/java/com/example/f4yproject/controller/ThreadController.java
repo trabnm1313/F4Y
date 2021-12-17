@@ -33,13 +33,13 @@ public class ThreadController {
         return thread;
     }
 
-    @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.POST)
     public int likeThread(@PathVariable("id") String id) {
         Thread thread = threadService.getThreadByID(id);
         thread.setLike(thread.getLike() + 1);
         Thread out = WebClient.create()
-                .post()
-                .uri("http://localhost:8091/updateThread")
+                .put()
+                .uri("http://localhost:9091/updateThread")
                 .body(Mono.just(thread), Thread.class)
                 .retrieve()
                 .bodyToMono(Thread.class)

@@ -22,6 +22,8 @@ public class Thread implements Serializable {
     Date timeStamp;
     String tag;
 
+    public Thread() {}
+
     public Thread(String _id, String ownerID, String topic, String message, Integer like, Boolean isEdited, Date timeStamp, String tag) {
         this._id = _id;
         this.ownerID = ownerID;

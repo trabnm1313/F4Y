@@ -19,6 +19,8 @@ public class Comment implements Serializable {
     Boolean isEdited;
     Date timeStamp;
 
+    public Comment() {}
+
     public Comment(String _id, String threadID, String ownerID, String message, Boolean isEdited, Date timeStamp) {
         this._id = _id;
         this.threadID = threadID;
