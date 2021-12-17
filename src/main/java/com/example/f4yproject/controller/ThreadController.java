@@ -28,8 +28,9 @@ public class ThreadController {
         return ResponseEntity.ok(threadService.updateThread(thread));
     }
 
-    @RequestMapping(value = "/deleteThread", method = RequestMethod.DELETE)
-    public boolean deleteThread(@RequestBody Thread thread) {
-        return threadService.deleteThread(thread);
+
+    @RequestMapping(value = "/deleteThread/{id}", method = RequestMethod.DELETE)
+    public boolean deleteThread(@PathVariable("id") String threadID) {
+        return threadService.deleteThread(threadID);
     }
 }

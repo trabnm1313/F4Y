@@ -27,12 +27,12 @@ public class ThreadService {
         return threadRepository.save(thread);
     }
 
-    public boolean deleteThread(Thread thread){
+    public boolean deleteThread(String id){
 
         boolean isDeleted;
 
         try{
-            threadRepository.delete(thread);
+            threadRepository.deleteById(id);
             isDeleted = true;
         }catch(Exception e){
             e.printStackTrace();
