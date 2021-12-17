@@ -19,13 +19,13 @@ public class CommentController {
         return comments;
     }
 
-    @RequestMapping(value = "/getComment/ByThreadID/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/getComment/byThreadID/{id}", method = RequestMethod.GET)
     public Comment getCommentByThreadID(@PathVariable("id") String id) {
         Comment comments = commentService.getCommentByThreadID(id);
         return comments;
     }
 
-    @RequestMapping(value = "/getComment/ByOwnerID/{id}", method = RequestMethod.GET)
+    @RequestMapping(value = "/getComment/byOwnerID/{id}", method = RequestMethod.GET)
     public Comment getCommentByOwnerID(@PathVariable("id") String id) {
         Comment comments = commentService.getCommentByOwnerID(id);
         return comments;
