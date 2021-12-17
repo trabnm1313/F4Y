@@ -34,7 +34,7 @@ public class ThreadController {
     }
 
     @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.POST)
-    public int likeThread(@PathVariable("id") String id) {
+    public Integer likeThread(@PathVariable("id") String id) {
         Thread thread = threadService.getThreadByID(id);
         thread.setLike(thread.getLike() + 1);
         Thread out = WebClient.create()
