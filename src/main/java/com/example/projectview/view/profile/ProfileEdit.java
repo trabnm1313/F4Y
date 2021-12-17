@@ -4,9 +4,9 @@ import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
@@ -15,74 +15,63 @@ import com.vaadin.flow.router.Route;
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet
 @CssImport(value = "profile.css")
-// Import a style sheet into the local scope of the TextField component
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field")
-// Import a style sheet into the local scope of the TextField onFocus component
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field[focus]")
-// Import a style sheet into the local scope of the TextField component
-@CssImport(value = "textArea.css", themeFor = "vaadin-text-area")
-// Import a style sheet into the local scope of the TextField onFocus component
-@CssImport(value = "textArea.css", themeFor = "vaadin-text-area[focus]")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area[focus]")
 
 @Route("edit-profile")
 public class ProfileEdit extends VerticalLayout{
 
-    HorizontalLayout h1 = new HorizontalLayout();
-    VerticalLayout v2 = new VerticalLayout();
-    VerticalLayout v1 = new VerticalLayout();
+    HorizontalLayout hProfile = new HorizontalLayout(); // all profile
 
-    HorizontalLayout ho1 = new HorizontalLayout();
-    VerticalLayout vi1 = new VerticalLayout();
-    VerticalLayout vi2 = new VerticalLayout();
-    VerticalLayout vi21 = new VerticalLayout();
-
-    Button btn1, btn2, btn3, btnEdit, btnConfirm;
-    Boolean viewB = false;
     public ProfileEdit() {
+        getStyle().set("padding-top", "5%");
 
+        VerticalLayout vAvatarAndSaveBtn = new VerticalLayout(); // all detail can edit
+        HorizontalLayout vFieldPassword = new HorizontalLayout(); // field password and confirm password
+
+        /*---------- Profile -------------*/
+        hProfile.getStyle().set("padding-left", "25%");
+        hProfile.getStyle().set("padding-right", "20%");
+
+        // AVATAR AND SAVE BUTTON
+        VerticalLayout vDetailEdit = new VerticalLayout(); // avatar and Save button
         Avatar avatarName = new Avatar("Viu");
         avatarName.getStyle().set("background-color", "#ECB365");
         avatarName.setHeight("300px");
         avatarName.setWidth("300px");
 
-        TextField name = new TextField("Name");
-        TextArea des = new TextArea("Description");
+        vAvatarAndSaveBtn.add(avatarName);
 
-        v1.getStyle().set("padding-top", "20%");
+        // EDIT DETAIL
+        TextField nickname = new TextField("Nickname");
+        nickname.setClassName("font");
 
-        h1.getStyle().set("padding-left", "30%");
-        h1.getStyle().set("padding-right", "20%");
+        TextArea description = new TextArea("Description");
+        description.setMaxLength(100);
+        description.setClassName("font");
+        description.setWidth("100%");
 
-        vi2.getStyle().set("padding-left", "30%");
+        TextField username = new TextField("Username");
+        username.addClassName("font");
 
-        vi21.setHeight("150px");
-        vi21.getStyle().set("background-color", "#064663");
-        vi21.getStyle().set("border-radius", "10px");
+        PasswordField password = new PasswordField("Password");
+        password.addClassName("font");
 
-        vi2.setWidth("70%");
-        vi2.getElement().getStyle().set("flex-grow", "1");
+        PasswordField confirmPassword = new PasswordField("Confirm Password");
+        confirmPassword.addClassName("font");
 
-        btn1 = new Button("Like");
-        btn1.getStyle().set("background-color", "#ECB365");
-        btn1.getStyle().set("color", "black");
-        btn2 = new Button("Comment");
-        btn2.getStyle().set("background-color", "#ECB365");
-        btn2.getStyle().set("color", "black");
-        btn3 = new Button("Chat");
-        btn3.getStyle().set("background-color", "#ECB365");
-        btn3.getStyle().set("color", "black");
-
-
-        btnConfirm = new Button("Confirm");
+        Button btnConfirm = new Button("Save");
         btnConfirm.getStyle().set("background-color", "#ECB365");
         btnConfirm.getStyle().set("color", "black");
+        btnConfirm.addClassName("font");
 
-        v1.add(name, des);
-        v2.add(avatarName, btnConfirm);
-        h1.add(v2, v1);
-        ho1.add(btn1, btn2, btn3);
-        vi2.add(vi21, ho1);
 
-        add(h1, vi2);
+        vFieldPassword.add(password, confirmPassword);
+        vDetailEdit.add(nickname, description, username, vFieldPassword, btnConfirm);
+
+        hProfile.add(vAvatarAndSaveBtn, vDetailEdit);
+        add(hProfile);
     }
 }
