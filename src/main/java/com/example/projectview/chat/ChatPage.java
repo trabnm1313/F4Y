@@ -1,6 +1,9 @@
 package com.example.projectview.chat;
 
 import com.example.projectview.login.LoginPage;
+import com.example.projectview.pojo.Message;
+import com.example.projectview.pojo.Thread;
+import com.example.projectview.pojo.User;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +30,6 @@ import com.vaadin.flow.shared.Registration;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -40,74 +42,33 @@ import java.util.stream.Stream;
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
 
 @Push
-@Route("chat/:userID")
+@Route("chat/:threadID/:userID")
 public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
 
-    User nowUser;
+    Thread threadNow;
+    User userNow;
     UserInfo userInfo;
+
     JsonNode msg;
 
-    VerticalLayout v1;
+    public ChatPage() {}
 
-    public ChatPage() {
-
+    public void addChat(){
         setSizeFull();
         setPadding(false);
         setSpacing(false);
         setAlignItems(Alignment.CENTER);
 
-        Label l1 = new Label("Topics");
+        Label l1 = new Label();
+        l1.setText(threadNow.getTopic());
         l1.addClassName("font");
         l1.addClassName("header-Text");
 
-
-        TextField msgField = new TextField();
-        msgField.setMaxLength(100);
-        msgField.setSizeFull();
-        msgField.setPlaceholder("ใส่ข้อความที่นี่");
-        msgField.addClassName("font");
-
-        HorizontalLayout header = new HorizontalLayout();
-        header.addClassName("header");
-        header.setWidth("100%");
-        header.setPadding(true);
-
-        HorizontalLayout input = new HorizontalLayout();
-        input.addClassName("message-input");
-
-        HorizontalLayout msgBox1 = new HorizontalLayout();
-        msgBox1.addClassName("message-box");
-        msgBox1.setWidth("100%");
-
-        HorizontalLayout msgBox2 = new HorizontalLayout();
-        msgBox2.addClassName("message-box");
-        msgBox2.setWidth("100%");
-        msgBox2.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout content = new VerticalLayout();
-        content.addClassName("content");
-        content.setWidth("95%");
-
-        v1 = new VerticalLayout();
-        v1.setHeight("100%");
-        v1.setJustifyContentMode(JustifyContentMode.END);
-
-        VerticalLayout v2 = new VerticalLayout();
-
-        header.add(l1);
-
-        content.add(v1, v2);
-
-        add(header, content);
-        expand(content);
-    }
-
-    public void addChat(){
         VerticalLayout vl = new VerticalLayout();
         HorizontalLayout hl = new HorizontalLayout();
         HorizontalLayout hl2 = new HorizontalLayout();
 
-        CollaborationMessageList collaborationMessageList = new CollaborationMessageList(userInfo, "FirstTopic", new CollaborationMessagePersister() {
+        CollaborationMessageList collaborationMessageList = new CollaborationMessageList(userInfo, threadNow.getTopic(), new CollaborationMessagePersister() {
             @Override
             public Stream<CollaborationMessage> fetchMessages(FetchQuery fetchQuery) {
                 msg = WebClient.create().get().uri("http://localhost:9090/getMessage/byTopic/" + fetchQuery.getTopicId() + "/" + fetchQuery.getSince()).retrieve().bodyToMono(JsonNode.class).block();
@@ -179,12 +140,55 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         hl.add(collaborationMessageList);
         vl.add(hl, hl2);
 
+
+
+        TextField msgField = new TextField();
+        msgField.setMaxLength(100);
+        msgField.setSizeFull();
+        msgField.setPlaceholder("ใส่ข้อความที่นี่");
+        msgField.addClassName("font");
+
+        HorizontalLayout header = new HorizontalLayout();
+        header.addClassName("header");
+        header.setWidth("100%");
+        header.setPadding(true);
+
+        HorizontalLayout input = new HorizontalLayout();
+        input.addClassName("message-input");
+
+        HorizontalLayout msgBox1 = new HorizontalLayout();
+        msgBox1.addClassName("message-box");
+        msgBox1.setWidth("100%");
+
+        HorizontalLayout msgBox2 = new HorizontalLayout();
+        msgBox2.addClassName("message-box");
+        msgBox2.setWidth("100%");
+        msgBox2.setJustifyContentMode(JustifyContentMode.END);
+
+        VerticalLayout content = new VerticalLayout();
+        content.addClassName("content");
+        content.setWidth("95%");
+
+        VerticalLayout v1 = new VerticalLayout();
+        v1.setHeight("100%");
+        v1.setJustifyContentMode(JustifyContentMode.END);
+
         v1.add(vl);
+
+        VerticalLayout v2 = new VerticalLayout();
+
+        header.add(l1);
+
+        content.add(v1, v2);
+
+        add(header, content);
+        expand(content);
     }
 
     @Override
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         String userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+        String threadID = beforeEnterEvent.getRouteParameters().get("threadID").get();
 
         try {
             User user = WebClient.create()
@@ -194,7 +198,16 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
                     .bodyToMono(User.class)
                     .block();
 
-            this.nowUser = user;
+            Thread thread = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getThread/byID/" + threadID)
+                    .retrieve()
+                    .bodyToMono(Thread.class)
+                    .block();
+
+            this.userNow = user;
+            this.threadNow = thread;
+
             this.userInfo = new UserInfo(user.get_id(), user.getNickname(), null);
 
             addChat();

@@ -1,6 +1,6 @@
 package com.example.projectview.view.profile;
 
-import com.example.projectview.chat.User;
+import com.example.projectview.pojo.User;
 import com.example.projectview.login.LoginPage;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;

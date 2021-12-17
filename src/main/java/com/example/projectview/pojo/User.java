@@ -1,4 +1,4 @@
-package com.example.projectview.chat;
+package com.example.projectview.pojo;
 
 import lombok.Data;
 import org.springframework.data.annotation.Id;

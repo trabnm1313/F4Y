@@ -1,4 +1,4 @@
-package com.example.projectview.chat;
+package com.example.projectview.pojo;
 
 import com.vaadin.collaborationengine.UserInfo;
 import com.vaadin.flow.component.messages.MessageListItem;
