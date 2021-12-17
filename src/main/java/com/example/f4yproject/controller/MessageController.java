@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.List;
 
 @RestController
@@ -31,9 +32,9 @@ public class MessageController {
         return message;
     }
 
-    @RequestMapping(value = "/getMessage/byTopic/{topic}", method = RequestMethod.GET)
-    public Message getMessageByTopic(@PathVariable("topic") String topic) {
-        Message message = messageService.getMessageByTopic(topic);
+    @RequestMapping(value = "/getMessage/byTopic/{topic}/{since}", method = RequestMethod.GET)
+    public List<Message> getMessageByTopic(@PathVariable("topic") String topic, @PathVariable("since") Instant since) {
+        List<Message> message = messageService.getAllMessageByTopic(topic, since);
         return message;
     }
 }
