@@ -42,7 +42,7 @@ public class ThreadController {
         thread.setLike(thread.getLike() + 1);
         Thread out = WebClient.create()
                 .post()
-                .uri("http://localhost:8080/addWizard")
+                .uri("http://localhost:8080/updateThread")
                 .body(Mono.just(thread), Thread.class)
                 .retrieve()
                 .bodyToMono(Thread.class)
