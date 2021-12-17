@@ -37,7 +37,6 @@ public class PostConsumer {
                 new TypeReference<List<Thread>>() {}
         );
         Collections.reverse(this.threads);
-        System.out.println(this.threads);
     }
 
     public List<Thread> getData() {
