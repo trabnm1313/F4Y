@@ -20,8 +20,8 @@ public class CommentController {
     }
 
     @RequestMapping(value = "/getComment/byThreadID/{id}", method = RequestMethod.GET)
-    public Comment getCommentByThreadID(@PathVariable("id") String id) {
-        Comment comments = commentService.getCommentByThreadID(id);
+    public List<Comment> getCommentByThreadID(@PathVariable("id") String id) {
+        List<Comment> comments = commentService.getCommentByThreadID(id);
         return comments;
     }
 

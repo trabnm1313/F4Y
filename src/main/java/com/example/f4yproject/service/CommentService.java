@@ -21,8 +21,8 @@ public class CommentService {
         return commentRepository.findCommentByID(ID);
     }
 
-    public Comment getCommentByThreadID(String ID){
-        return commentRepository.findCommentByThreadID(ID);
+    public List<Comment> getCommentByThreadID(String ID){
+        return commentRepository.findAllCommentByThreadID(ID);
     }
 
     public Comment getCommentByOwnerID(String ID) {
