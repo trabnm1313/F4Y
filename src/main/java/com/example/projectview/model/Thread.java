@@ -17,9 +17,10 @@ public class Thread {
         Integer like;
         Boolean isEdited;
         Date timeStamp;
+        String tag;
 
         public Thread() {}
-        public Thread(String _id, String ownerID, String topic, String message, Integer like, Boolean isEdited, Date timeStamp) {
+        public Thread(String _id, String ownerID, String topic, String message, Integer like, Boolean isEdited, Date timeStamp, String tag) {
             this._id = _id;
             this.ownerID = ownerID;
             this.topic = topic;
@@ -27,5 +28,6 @@ public class Thread {
             this.like = like;
             this.isEdited = isEdited;
             this.timeStamp = timeStamp;
+            this.tag = tag;
         }
 }

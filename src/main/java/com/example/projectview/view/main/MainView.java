@@ -28,6 +28,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -46,43 +47,17 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     VerticalLayout vMenu = new VerticalLayout(); // column-menu
     VerticalLayout vAllPost = new VerticalLayout(); // column-post
     VerticalLayout vProfileAndNewPost = new VerticalLayout(); // column-profile and add post
+
+    private int selectedTagID = 0;
     private String userID;
-    private List<Thread> allThread;
-
-    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-        userID = beforeEnterEvent.getRouteParameters().get("userID").get();
-    }
-
-    public void getAllPost() {
-        JsonNode out = WebClient.create()
-                .get()
-                .uri("http://localhost:9090/getThreads")
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-
-        ObjectMapper mapper = new ObjectMapper();
-        this.allThread = mapper.convertValue(
-                out,
-                new TypeReference<List<Thread>>() {}
-        );
-
-        System.out.println(this.allThread);
-    }
-
-    public void displayAllPost() {
-        Collections.reverse(this.allThread);
-
-        for (int i=0; i < this.allThread.size(); i++) {
-            createPost(allThread.get(i));
-        }
-    }
+    private List<Thread> allThread; //data
+    private User nowUser; //data
 
     public MainView() {
 
         // fetch data form db and display
         getAllPost();
-        displayAllPost();
+        displayAllPost(filterPost(this.selectedTagID));
 
         // MENU
         Tabs views = getPrimaryNavigation();
@@ -182,6 +157,50 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
 
         vProfileAndNewPost.add(vUser, editBtn, vAddPost, addPostBtn);
         add(vMenu, vAllPost, vProfileAndNewPost);
+
+        /*-----------------------------Event Listener-----------------------------*/
+        views.addSelectedChangeListener(event -> {
+            this.selectedTagID = views.getSelectedIndex();
+
+            vAllPost.removeAll();
+            displayAllPost(filterPost(this.selectedTagID));
+        });
+    }
+
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+
+        User user = WebClient.create()
+                .get()
+                .uri("http://localhost:9090/getUser/byID/" + userID)
+                .retrieve()
+                .bodyToMono(User.class)
+                .block();
+
+        this.nowUser = user;
+    }
+
+    public void getAllPost() {
+        JsonNode out = WebClient.create()
+                .get()
+                .uri("http://localhost:9090/getThreads")
+                .retrieve()
+                .bodyToMono(JsonNode.class)
+                .block();
+
+        ObjectMapper mapper = new ObjectMapper();
+        this.allThread = mapper.convertValue(
+                out,
+                new TypeReference<List<Thread>>() {}
+        );
+
+        Collections.reverse(this.allThread);
+    }
+
+    public void displayAllPost(List<Thread> displayThread) {
+        for (int i=0; i < displayThread.size(); i++) {
+            createPost(displayThread.get(i));
+        }
     }
 
     private void createPost(Thread post) {
@@ -195,7 +214,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         Label topicPost = new Label(post.getTopic());
         topicPost.getStyle().set("font-size", "25px");
 
-        Label tagPost = new Label('#' + post.getOwnerID());
+        Label tagPost = new Label('#' + post.getTag());
 
         Span description = new Span(post.getMessage());
         description.setWidth("100%");
@@ -247,7 +266,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     }
 
     private void createThreadInDb(String topic, String message, String tag) {
-        Thread post = new Thread( null, userID, topic, message, 0, false, null);
+        Thread post = new Thread( null, userID, topic, message, 0, false, null, tag);
 
         String res = WebClient.create()
                 .post()
@@ -269,7 +288,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
 
         // fetch data form db and display
         getAllPost();
-        displayAllPost();
+        displayAllPost(filterPost(this.selectedTagID));
     }
 
     private String getNickname(String userID) {
@@ -322,4 +341,41 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         return new Tab(link);
     }
 
+    private List<Thread> filterPost(int tagID) {
+        List<Thread> filtered = new ArrayList<>();
+
+        if (tagID == 0) {
+            return this.allThread;
+        }
+
+        for (int i=0; i<this.allThread.size(); i++) {
+            if (tagID == 1 && this.allThread.get(i).getTag().equals("สัตว์")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 2 && this.allThread.get(i).getTag().equals("กีฬา")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 3 && this.allThread.get(i).getTag().equals("การเรียน")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 4 && this.allThread.get(i).getTag().equals("ครอบครัว")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 5 && this.allThread.get(i).getTag().equals("การเมือง")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 6 && this.allThread.get(i).getTag().equals("การเงิน")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 7 && this.allThread.get(i).getTag().equals("สุขภาพ")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 8 && this.allThread.get(i).getTag().equals("อาหาร")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 9 && this.allThread.get(i).getTag().equals("ท่องเที่ยว")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 10 && this.allThread.get(i).getTag().equals("รถยนต์")) {
+                filtered.add(this.allThread.get(i));
+            } else if (tagID == 11 && this.allThread.get(i).getTag().equals("แฟชั่น")) {
+                filtered.add(this.allThread.get(i));
+            }  else if (tagID == 12 && this.allThread.get(i).getTag().equals("การ์ตูน")) {
+                filtered.add(this.allThread.get(i));
+            }
+        }
+
+        return filtered;
+    }
 }
