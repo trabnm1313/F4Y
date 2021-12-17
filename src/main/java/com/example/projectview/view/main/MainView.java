@@ -27,10 +27,12 @@ import java.util.EventListener;
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet
 @CssImport(value = "mainView.css")
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field")
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field[focus]")
-@CssImport(value = "selectItems.css", themeFor = "vaadin-tab")
-@CssImport(value = "./components/combo-box.css", themeFor = "vaadin-combo-box-item")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area[focus]")
+@CssImport(value = "components/selectItems.css", themeFor = "vaadin-tab")
+@CssImport(value = "components/combo-box.css", themeFor = "vaadin-combo-box-item")
 
 @Route("main")
 public class MainView extends HorizontalLayout {
@@ -198,6 +200,7 @@ public class MainView extends HorizontalLayout {
         Avatar user = new Avatar();
         user.setWidth("50px");
         user.setHeight("50px");
+        user.getStyle().set("background-color", "#ECB365");
 
         Label nameUser = new Label();
         nameUser.setWidth("80px");
