@@ -8,14 +8,11 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.notification.NotificationVariant;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.textfield.TextArea;
-import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -23,31 +20,23 @@ import org.springframework.web.reactive.function.client.WebClient;
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet
 @CssImport(value = "profile.css")
-// Import a style sheet into the local scope of the TextField component
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field")
-// Import a style sheet into the local scope of the TextField onFocus component
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field[focus]")
-// Import a style sheet into the local scope of the TextField component
-@CssImport(value = "textArea.css", themeFor = "vaadin-text-area")
-// Import a style sheet into the local scope of the TextField onFocus component
-@CssImport(value = "textArea.css", themeFor = "vaadin-text-area[focus]")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area[focus]")
 
-@Route("view-profile/:userID")
-public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
-    HorizontalLayout h1 = new HorizontalLayout();
-    VerticalLayout v2 = new VerticalLayout();
-    VerticalLayout v1 = new VerticalLayout();
+@Route("view-profile")
+public class ProfileView extends VerticalLayout {
+    HorizontalLayout hProfile = new HorizontalLayout(); // all profile
+    VerticalLayout vPost = new VerticalLayout();
 
-    HorizontalLayout ho1 = new HorizontalLayout();
-    VerticalLayout vi1 = new VerticalLayout();
-    VerticalLayout vi2 = new VerticalLayout();
-    VerticalLayout vi21 = new VerticalLayout();
-
-    Button btn1, btn2, btn3, btnEdit;
-    Boolean viewB = false;
-
-    String userID;
-    User nowUser;
+    public ProfileView() {
+        // Profile
+        hProfile.getStyle().set("padding-left", "30%");
+        hProfile.getStyle().set("padding-right", "20%");
+        VerticalLayout vDetailProfile = new VerticalLayout();
+        vDetailProfile.getStyle().set("padding-top", "20%");
+        VerticalLayout vAvatar = new VerticalLayout();
 
     public ProfileView() {}
 
@@ -58,45 +47,82 @@ public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
         avatarName.setHeight("300px");
         avatarName.setWidth("300px");
 
-        Label nameLabel = new Label(nowUser.getNickname());
-        Label desLabel = new Label(nowUser.getDescription());
+        Label nickname = new Label("Viu");
+        nickname.setClassName("font");
+        Label description = new Label("FolkYou");
+        description.setClassName("font");
 
-        v1.getStyle().set("padding-top", "20%");
+        vAvatar.add(avatarName);
+        vDetailProfile.add(nickname, description);
+        hProfile.add(vAvatar, vDetailProfile);
 
-        h1.getStyle().set("padding-left", "30%");
-        h1.getStyle().set("padding-right", "20%");
+        // Post
+        vPost.getStyle().set("padding-left", "30%");
+        vPost.setWidth("70%");
+        vPost.getElement().getStyle().set("flex-grow", "1");
 
-        vi2.getStyle().set("padding-left", "30%");
+        add(hProfile, vPost);
+    }
 
-        vi21.setHeight("200px");
-        vi21.getStyle().set("background-color", "#064663");
-        vi21.getStyle().set("border-radius", "10px");
+    private void createPost(String topic, String message, String tag) {
 
-        vi2.setWidth("70%");
-        vi2.getElement().getStyle().set("flex-grow", "1");
+        VerticalLayout vPostLayout = new VerticalLayout();
+        vPostLayout.getStyle()
+                .set("background-color", "#064663")
+                .set("border-radius", "10px");
 
-        btn1 = new Button("Like");
-        btn1.getStyle().set("background-color", "#ECB365");
-        btn1.getStyle().set("color", "black");
-        btn2 = new Button("Comment");
-        btn2.getStyle().set("background-color", "#ECB365");
-        btn2.getStyle().set("color", "black");
-        btn3 = new Button("Chat");
-        btn3.getStyle().set("background-color", "#ECB365");
-        btn3.getStyle().set("color", "black");
+        Label topicPost = new Label(topic);
+        topicPost.getStyle().set("font-size", "25px");
 
-        btnEdit = new Button("แก้ไข");
-        btnEdit.getStyle().set("background-color", "#ECB365");
-        btnEdit.getStyle().set("color", "black");
-        btnEdit.setVisible(viewB);
+        Label tagPost = new Label('#'+tag);
 
-        v1.add(nameLabel, desLabel);
-        v2.add(avatarName, btnEdit);
-        h1.add(v2, v1);
-        ho1.add(btn1, btn2, btn3);
-        vi2.add(vi21, ho1);
+        Span description = new Span(message);
+        description.setWidth("100%");
+        description.getStyle()
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis");
 
-        add(h1, vi2);
+        Button likeBtn = new Button("Like", new Icon(VaadinIcon.HEART));
+        likeBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        likeBtn.setIconAfterText(true);
+
+        Button commentBtn = new Button("Comment", new Icon(VaadinIcon.COMMENT_O));
+        commentBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        commentBtn.setIconAfterText(true);
+
+        Button chatBtn = new Button("Chat", new Icon(VaadinIcon.CHAT));
+        chatBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        chatBtn.setIconAfterText(true);
+
+        HorizontalLayout hButtonPost = new HorizontalLayout(); // add button for post
+        HorizontalLayout vUserPost = new HorizontalLayout(); // add user post
+        VerticalLayout vDetailPost = new VerticalLayout(); // add detail post
+        VerticalLayout vOnePost = new VerticalLayout(); // add all detail in one post
+
+        Avatar user = new Avatar();
+        user.setWidth("50px");
+        user.setHeight("50px");
+        user.getStyle().set("background-color", "#ECB365");
+
+        Label nameUser = new Label();
+        nameUser.setWidth("80px");
+        nameUser.getStyle()
+                .set("text-align", "center")
+                .set("margin-top", "10%");
+
+        vUserPost.add(user, nameUser); //add detail user
+
+        hButtonPost.add(likeBtn, commentBtn, chatBtn); // add button
+        vDetailPost.add(topicPost, tagPost, description); // add detail post
+        vPostLayout.add(vDetailPost, vUserPost); // add detail post and user
+        vOnePost.add(vPostLayout, hButtonPost); // add all detail
+        vPost.add(vOnePost);
     }
 
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {

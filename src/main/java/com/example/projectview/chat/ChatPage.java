@@ -1,15 +1,37 @@
 package com.example.projectview.chat;
 
-import com.vaadin.flow.component.avatar.Avatar;
+import com.example.projectview.login.LoginPage;
+import com.example.projectview.pojo.Message;
+import com.example.projectview.pojo.Thread;
+import com.example.projectview.pojo.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.vaadin.collaborationengine.CollaborationMessage;
+import com.vaadin.collaborationengine.CollaborationMessageList;
+import com.vaadin.collaborationengine.CollaborationMessagePersister;
+import com.vaadin.collaborationengine.UserInfo;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.shared.Registration;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
+import java.util.stream.Stream;
 
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet into the global scope
@@ -19,40 +41,112 @@ import com.vaadin.flow.theme.Theme;
 // Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
 
-@Route("chat/:postID")
-public class ChatPage extends VerticalLayout {
-    public ChatPage() {
+@Push
+@Route("chat/:threadID/:userID")
+public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
+
+    Thread threadNow;
+    User userNow;
+    UserInfo userInfo;
+
+    JsonNode msg;
+
+    public ChatPage() {}
+
+    public void addChat(){
         setSizeFull();
         setPadding(false);
         setSpacing(false);
         setAlignItems(Alignment.CENTER);
 
-        Label l1 = new Label("Topics");
+        Label l1 = new Label();
+        l1.setText(threadNow.getTopic());
         l1.addClassName("font");
         l1.addClassName("header-Text");
 
-        Label msg1 = new Label("สวัสดี พอจะมีเวลาว่างซัก 2 - 3 ชม ต่อวันไหม?");
-        msg1.addClassName("font");
-        msg1.addClassName("message");
+        VerticalLayout vl = new VerticalLayout();
+        HorizontalLayout hl = new HorizontalLayout();
+        HorizontalLayout hl2 = new HorizontalLayout();
 
-        Label msg2 = new Label("เสือกเลยไอ่สัส ไม่ต้องมายุ่งกะกู");
-        msg2.addClassName("font");
-        msg2.addClassName("message");
+        CollaborationMessageList collaborationMessageList = new CollaborationMessageList(userInfo, threadNow.getTopic(), new CollaborationMessagePersister() {
+            @Override
+            public Stream<CollaborationMessage> fetchMessages(FetchQuery fetchQuery) {
+                msg = WebClient.create().get().uri("http://localhost:9090/getMessage/byTopic/" + fetchQuery.getTopicId() + "/" + fetchQuery.getSince()).retrieve().bodyToMono(JsonNode.class).block();
 
-        Avatar a1 = new Avatar();
-        a1.addClassName("avatar");
+                ObjectMapper objectMapper = new ObjectMapper();
+                objectMapper.registerModule(new JavaTimeModule());
+                List<Message> msgList = objectMapper.convertValue(msg, new TypeReference<List<Message>>() {});
 
-        Avatar a2 = new Avatar();
-        a2.addClassName("avatar");
+                return msgList.stream().map(message -> {
+                    JsonNode userObject = WebClient.create().get().uri("http://localhost:9090/getUser/byID/" + message.getUserID()).retrieve().bodyToMono(JsonNode.class).block();
+                    User user = objectMapper.convertValue(userObject, new TypeReference<User>() {});
+                    UserInfo userInfo = new UserInfo(message.getUserID(), user.getUsername(), null);
+                    return new CollaborationMessage(userInfo, message.getText(), message.getTimeStamp());
+                });
+            }
+
+
+            @Override
+            public void persistMessage(PersistRequest persistRequest) {
+                CollaborationMessage message = persistRequest.getMessage();
+
+                Message messageEntity = new Message();
+                messageEntity.setTopic(persistRequest.getTopicId());
+                messageEntity.setText(message.getText());
+                messageEntity.setUserID(message.getUser().getId());
+                messageEntity.setTimeStamp(message.getTime());
+
+                WebClient.create().post().uri("http://localhost:9091/createMessage").body(Mono.just(messageEntity), Message.class).retrieve().bodyToMono(Message.class).block();
+            }
+        });
+
+        TextField field = new TextField();
+        Button button = new Button("Submit");
+        button.setEnabled(false);
+
+        collaborationMessageList.setSubmitter(activationContext -> {
+            button.setEnabled(true);
+            Registration registration = button.addClickListener(event -> {
+                if(field.getValue() != "") activationContext.appendMessage(field.getValue());
+                field.setValue("");
+            });
+            Registration registration2 = field.addKeyDownListener(E -> {
+                if(E.getKey().getKeys().equals(Key.ENTER.getKeys())){
+                    if(field.getValue() != "") activationContext.appendMessage(field.getValue());
+                    field.setValue("");
+                }
+            });
+            return () -> {
+                registration.remove();
+                registration2.remove();
+                button.setEnabled(false);
+            };
+        });
+
+        hl2.add(field, button);
+        hl2.expand(field);
+        hl2.setWidthFull();
+
+        collaborationMessageList.addClassNames("font", "message");
+
+        hl.setWidth("100%");
+        hl.setHeight("350px");
+        hl.expand(collaborationMessageList);
+
+        vl.setWidth("100%");
+        vl.setHeight("350px");
+        vl.expand(collaborationMessageList);
+
+        hl.add(collaborationMessageList);
+        vl.add(hl, hl2);
+
+
 
         TextField msgField = new TextField();
         msgField.setMaxLength(100);
         msgField.setSizeFull();
         msgField.setPlaceholder("ใส่ข้อความที่นี่");
         msgField.addClassName("font");
-
-        Button sendButton = new Button("Send");
-        sendButton.addClassName("b1");
 
         HorizontalLayout header = new HorizontalLayout();
         header.addClassName("header");
@@ -79,18 +173,9 @@ public class ChatPage extends VerticalLayout {
         v1.setHeight("100%");
         v1.setJustifyContentMode(JustifyContentMode.END);
 
+        v1.add(vl);
+
         VerticalLayout v2 = new VerticalLayout();
-
-        input.setWidth("100%");
-        input.setPadding(true);
-        input.add(msgField);
-        input.add(sendButton);
-
-        msgBox1.add(a1, msg1);
-        msgBox2.add(msg2, a2);
-
-        v1.add(msgBox1, msgBox2);
-        v2.add(input);
 
         header.add(l1);
 
@@ -98,5 +183,41 @@ public class ChatPage extends VerticalLayout {
 
         add(header, content);
         expand(content);
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        String userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+        String threadID = beforeEnterEvent.getRouteParameters().get("threadID").get();
+
+        try {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            Thread thread = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getThread/byID/" + threadID)
+                    .retrieve()
+                    .bodyToMono(Thread.class)
+                    .block();
+
+            this.userNow = user;
+            this.threadNow = thread;
+
+            this.userInfo = new UserInfo(user.get_id(), user.getNickname(), null);
+
+            addChat();
+
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Please Login");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            beforeEnterEvent.rerouteTo(LoginPage.class);
+        }
     }
 }

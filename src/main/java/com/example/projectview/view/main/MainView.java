@@ -45,10 +45,12 @@ import java.util.List;
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet
 @CssImport(value = "mainView.css")
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field")
-@CssImport(value = "textfield.css", themeFor = "vaadin-text-field[focus]")
-@CssImport(value = "selectItems.css", themeFor = "vaadin-tab")
-@CssImport(value = "my-dialog.css", themeFor = "vaadin-dialog-overlay")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field")
+@CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area")
+@CssImport(value = "components/textArea.css", themeFor = "vaadin-text-area[focus]")
+@CssImport(value = "components/selectItems.css", themeFor = "vaadin-tab")
+@CssImport(value = "components/combo-box.css", themeFor = "vaadin-combo-box-item")
 
 @Route("main/:userID")
 public class MainView extends HorizontalLayout implements BeforeEnterObserver {
@@ -111,6 +113,12 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         vAllPost.getStyle().set("overflow", "auto");
         vAllPost.setHeight("700px");
 
+
+        // PROFILE AND NEW POST
+        vProfileAndNewPost.setWidth("20%");
+        vProfileAndNewPost.setHeight("100%");
+        vProfileAndNewPost.setMargin(true);
+
         VerticalLayout vUser = new VerticalLayout(); // layout profile
         vUser.getStyle()
                 .set("background-color", "#064663")
@@ -123,18 +131,29 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
 
         TextField titleField = new TextField("Title");
         titleField.setMaxLength(50);
+        titleField.setClassName("font");
 
         TextArea descriptionArea = new TextArea("Description");
         descriptionArea.setMaxLength(500);
+        descriptionArea.setClassName("font");
 
         ComboBox<String> listTag = new ComboBox<String>("Tag");
-        listTag.setItems("สัตว์","การเรียน","ครอบครัว","การเมือง","การเงิน","สุขภาพ","อาหาร","ท่องเที่ยว","ท่องเที่ยว","รถยนต์","แฟชั่น","การ์ตูน");
+        listTag.setItems("สัตว์","การเรียน","ครอบครัว","การเมือง","การเงิน","สุขภาพ","อาหาร","ท่องเที่ยว","รถยนต์","แฟชั่น","การ์ตูน");
+        listTag.setClassName("font");
+        listTag.setRenderer(new ComponentRenderer<>(item -> {
+            Span text = new Span(item);
+                text.setClassName("cb");
+            return text;
+        }));
+        listTag.getElement().setAttribute("theme",
+                "custom-item-background");
 
         Button addPostBtn = new Button("Add Post", e -> createThreadInDb(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
         addPostBtn.getStyle()
                 .set("background-color", "#ECB365")
                 .set("color", "black");
         addPostBtn.setWidth("100%");
+        addPostBtn.setClassName("font");
 
         vAddPost.add(titleField, descriptionArea, listTag);
 
@@ -158,6 +177,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                 .set("background-color", "#ECB365")
                 .set("color", "black");
         editBtn.setWidth("100%");
+        editBtn.setClassName("font");
 
         HorizontalLayout hDetailUser = new HorizontalLayout(); //layout user in profile
         hDetailUser.add(user, nameUser); // add detail profile
@@ -266,6 +286,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         Avatar user = new Avatar(nickname);
         user.setWidth("50px");
         user.setHeight("50px");
+        user.getStyle().set("background-color", "#ECB365");
 
         Anchor nameUser = new Anchor("http://localhost:8080/view-profile/" + post.getOwnerID(), nickname);
         nameUser.setWidth("80px");
@@ -373,7 +394,9 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                 .set("padding", "var(--lumo-space-xs)");
 
         RouterLink link = new RouterLink();
-        link.add(icon, new Span(viewName));
+        Span vName = new Span(viewName);
+        vName.getStyle().set("font-family", "Prompt");
+        link.add(icon, vName);
         // Demo has no routes
         // link.setRoute(viewClass.java);
         link.setTabIndex(-1);

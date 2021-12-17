@@ -1,75 +1,191 @@
 package com.example.projectview.post;
 
+import com.example.projectview.pojo.Comment;
+import com.example.projectview.pojo.Thread;
+import com.example.projectview.login.LoginPage;
+import com.example.projectview.pojo.User;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.Key;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Footer;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-@Route("Post/:postID")
-public class ViewPost extends HorizontalLayout {
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
+
+@StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
+@CssImport(value = "mainView.css")
+@Route("post/:threadID/:userID")
+public class ViewPost extends HorizontalLayout implements BeforeEnterObserver {
+    String tag = "ลากหัวคมๆ";
+    Thread threadNow;
+    User userNow;
 
     public ViewPost() {
+    }
+
+    public void addPost(){
         setSizeFull();
         setPadding(false);
         setSpacing(false);
         setAlignItems(Alignment.CENTER);
 
-        Label titleLabel = new Label("Post 01");
-        titleLabel.addClassNames("header-Text-with-padding", "font");
-        titleLabel.setHeight("20%");
-        titleLabel.setWidthFull();
+        VerticalLayout headerLayout = new VerticalLayout();
+        headerLayout.addClassNames("header-Text-with-padding", "font");
 
-        Label c1 = new Label("อย่างหล่อ");
-        c1.addClassNames("message");
+        Label titleLabel = new Label();
+        titleLabel.setText(threadNow.getTopic());
+        titleLabel.setSizeFull();
 
-        Label c2 = new Label("อย่างหล่อ");
-        c2.addClassNames("message");
+        Label tagLabel = new Label();
+        tagLabel.setText("#" + threadNow.getTag());
+        tagLabel.addClassNames("font", "header-Text-Post");
+        tagLabel.setSizeFull();
+
+        VerticalLayout descriptionLayout = new VerticalLayout();
+        descriptionLayout.addClassNames("description-with-padding", "font");
+        descriptionLayout.setHeight("75%");
+
+        Label descriptionLabel = new Label();
+        descriptionLabel.setText(threadNow.getMessage());
+        descriptionLabel.setSizeFull();
+
+        descriptionLayout.add(descriptionLabel);
+
+        List comments = WebClient.create()
+                .get()
+                .uri("http://localhost:9090/getComment/byThreadID/" + threadNow.get_id())
+                .retrieve()
+                .bodyToMono(List.class)
+                .block();
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Comment> commentList = objectMapper.convertValue(comments, new TypeReference<List<Comment>>() {});
 
         TextField commentField = new TextField();
         commentField.setWidthFull();
         commentField.setPlaceholder("แสดงความคิดเห็น...");
+        commentField.setClassName("font");
 
         Footer comment = new Footer();
         comment.setSizeFull();
 
-        Label descriptionLabel = new Label("Lorem");
-        descriptionLabel.addClassNames("description-with-padding", "font");
-        descriptionLabel.setSizeFull();
-
         Button sendButton = new Button("Send");
         sendButton.addClassName("b1");
+        sendButton.addClassName("font");
 
-        VerticalLayout v1 = new VerticalLayout();
-        v1.setHeight("90%");
-        v1.setWidth("60%");
-        v1.setPadding(true);
-        v1.setSpacing(false);
+        sendButton.addClickListener(E -> {
+            Comment newComment = new Comment(null, threadNow.get_id(), userNow.get_id(), commentField.getValue(), false, new Date());
+            if(commentField.getValue() != "") WebClient.create().post().uri("http://localhost:9091/createComment").body(Mono.just(newComment), Comment.class).retrieve().bodyToMono(Comment.class).block();
+            commentField.setValue("");
+        });
+        commentField.addKeyDownListener(E -> {
+            if(E.getKey().getKeys().equals(Key.ENTER.getKeys())){
+                Comment newComment = new Comment(null, threadNow.get_id(), userNow.get_id(), commentField.getValue(), false, new Date());
+                if(commentField.getValue() != "") WebClient.create().post().uri("http://localhost:9091/createComment").body(Mono.just(newComment), Comment.class).retrieve().bodyToMono(Comment.class).block();
+                commentField.setValue("");
+            }
+        });
 
-        VerticalLayout v2 = new VerticalLayout();
-        v2.addClassName("comment-panel");
-        v2.setAlignItems(Alignment.CENTER);
-        v2.setHeight("80%");
-        v2.setWidth("40%");
-        v2.setPadding(true);
-        v2.setSpacing(true);
+        VerticalLayout vPost = new VerticalLayout();
+        vPost.setHeight("90%");
+        vPost.setWidth("60%");
+        vPost.setPadding(true);
+        vPost.setSpacing(false);
+        vPost.getStyle().set("margin-left", "5%");
 
-        VerticalLayout v3 = new VerticalLayout();
-        v3.setSizeFull();
+        VerticalLayout vAllComment = new VerticalLayout();
+        vAllComment.addClassName("comment-panel");
+        vAllComment.setAlignItems(Alignment.CENTER);
+        vAllComment.setHeight("80%");
+        vAllComment.setWidth("40%");
+        vAllComment.setPadding(true);
+        vAllComment.setSpacing(true);
 
-        HorizontalLayout h1 = new HorizontalLayout();
-        h1.setWidth("80%");
+        VerticalLayout vTextComment = new VerticalLayout();
+        vTextComment.getStyle().set("overflow", "auto");
+        vTextComment.setHeight("600px");
 
-        v3.add(c1, c2);
+        HorizontalLayout hSendComment = new HorizontalLayout();
+        hSendComment.setWidth("80%");
+
+        Button chatButton = new Button("Chat");
+        chatButton.addClassName("b1");
+        chatButton.addClassName("font");
+
+        //Add comment
+        for(Comment commentEntity : commentList){
+            VerticalLayout chatBox = new VerticalLayout();
+
+            //User
+            Label userLabel = new Label(userNow.getNickname());
+            userLabel.addClassName("font");
+
+            //Message
+            Label messageLabel = new Label(commentEntity.getMessage());
+            messageLabel.addClassName("message");
+
+            chatBox.add(userLabel, messageLabel);
+            vTextComment.add(chatBox);
+        }
+
         comment.add(commentField);
-        h1.add(comment, sendButton);
-        v1.add(titleLabel, descriptionLabel);
-        v2.add(v3, h1);
+        hSendComment.add(comment, sendButton);
+        headerLayout.add(titleLabel, tagLabel);
+        vPost.add(headerLayout, descriptionLayout, chatButton);
+        vAllComment.add(vTextComment, hSendComment);
 
-        this.add(v1, v2);
+        this.add(vPost, vAllComment);
+    }
+
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        String threadID = beforeEnterEvent.getRouteParameters().get("threadID").get();
+        String userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+
+        try {
+            Thread thread = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getThread/byID/" + threadID)
+                    .retrieve()
+                    .bodyToMono(Thread.class)
+                    .block();
+
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            this.threadNow = thread;
+            this.userNow = user;
+
+            addPost();
+
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Please Login");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            error.printStackTrace();
+            beforeEnterEvent.rerouteTo(LoginPage.class);
+        }
     }
 }

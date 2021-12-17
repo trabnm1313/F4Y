@@ -1,5 +1,7 @@
 body {
     background-color: #041C32;
+    font-family: Prompt;
+    font-weight: bold;
 }
 
 .font {
@@ -54,10 +56,14 @@ body {
     border-radius: 5px;
 }
 
+.header-Text-Post {
+    color: white;
+    font-size: 18px;
+}
+
 .header-Text-with-padding{
     background-color: #04293A;
     color: white;
-    padding: 20px;
     border-radius: 10px 10px 0px 0px;
     font-size: 40px;
 }
@@ -65,7 +71,6 @@ body {
 .description-with-padding{
     background-color: #064663;
     color: white;
-    padding: 20px;
     border-radius: 0px 0px 10px 10px;
 }
 
