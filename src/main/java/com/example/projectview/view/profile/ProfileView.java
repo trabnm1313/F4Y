@@ -1,15 +1,23 @@
 package com.example.projectview.view.profile;
 
+import com.example.projectview.login.LoginPage;
+import com.example.projectview.model.User;
+import com.example.projectview.view.main.MainView;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
+import org.springframework.web.reactive.function.client.WebClient;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -24,8 +32,8 @@ import com.vaadin.flow.router.Route;
 // Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "textArea.css", themeFor = "vaadin-text-area[focus]")
 
-@Route("view-profile")
-public class ProfileView extends VerticalLayout {
+@Route("view-profile/:userID")
+public class ProfileView extends VerticalLayout implements BeforeEnterObserver {
     HorizontalLayout h1 = new HorizontalLayout();
     VerticalLayout v2 = new VerticalLayout();
     VerticalLayout v1 = new VerticalLayout();
@@ -38,15 +46,20 @@ public class ProfileView extends VerticalLayout {
     Button btn1, btn2, btn3, btnEdit;
     Boolean viewB = false;
 
-    public ProfileView() {
+    String userID;
+    User nowUser;
 
-        Avatar avatarName = new Avatar("Viu");
+    public ProfileView() {}
+
+    private void create() {
+
+        Avatar avatarName = new Avatar(nowUser.getNickname());
         avatarName.getStyle().set("background-color", "#ECB365");
         avatarName.setHeight("300px");
         avatarName.setWidth("300px");
 
-        Label nameLabel = new Label("Viu");
-        Label desLabel = new Label("FolkYou");
+        Label nameLabel = new Label(nowUser.getNickname());
+        Label desLabel = new Label(nowUser.getDescription());
 
         v1.getStyle().set("padding-top", "20%");
 
@@ -84,5 +97,29 @@ public class ProfileView extends VerticalLayout {
         vi2.add(vi21, ho1);
 
         add(h1, vi2);
+    }
+
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+
+        try {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            System.out.println(user);
+            this.nowUser = user;
+            create();
+
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Profile Not Found");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            beforeEnterEvent.rerouteTo(MainView.class);
+        }
     }
 }

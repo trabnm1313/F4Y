@@ -1,9 +1,12 @@
 package com.example.projectview.view.main;
 
+import com.example.projectview.chat.ChatPage;
 import com.example.projectview.login.LoginPage;
 import com.example.projectview.model.Thread;
 import com.example.projectview.model.User;
 import com.example.projectview.post.PostConsumer;
+import com.example.projectview.post.ViewPost;
+import com.example.projectview.view.profile.ProfileEdit;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +16,7 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
@@ -25,10 +29,7 @@ import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.BeforeEnterEvent;
-import com.vaadin.flow.router.BeforeEnterObserver;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.router.*;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -60,7 +61,9 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     private PostConsumer allThread = new PostConsumer(); //data
     private User nowUser; //data
 
-    public MainView() {
+    public MainView() {}
+
+    private void create() {
         // fetch data form db and display
         displayAllPost(filterPost(this.selectedTagID));
 
@@ -140,11 +143,11 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         vProfileAndNewPost.setHeight("100%");
         vProfileAndNewPost.setMargin(true);
 
-        Avatar user = new Avatar("Viu");
+        Avatar user = new Avatar(nowUser.getNickname());
         user.setWidth("50px");
         user.setHeight("50px");
 
-        Label nameUser = new Label("Viu");
+        Label nameUser = new Label(nowUser.getNickname());
         nameUser.setWidth("50px");
         nameUser.getStyle()
                 .set("text-align", "center")
@@ -170,6 +173,23 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
             vAllPost.removeAll();
             displayAllPost(filterPost(this.selectedTagID));
         });
+
+        editBtn.addClickListener(event -> {
+            UI.getCurrent().navigate(ProfileEdit.class,
+                    new RouteParameters("userID", nowUser.get_id()));
+        });
+
+        searchTextField.addValueChangeListener(event -> {
+            List<Thread> filtered = new ArrayList<>();
+            vAllPost.removeAll();
+
+            for (int i=0; i<this.allThread.getData().size(); i++){
+                if (allThread.getData().get(i).getTopic().contains(event.getValue())) {
+                    filtered.add(allThread.getData().get(i));
+                }
+            }
+            displayAllPost(filtered);
+        });
     }
 
     public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
@@ -184,6 +204,8 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                     .block();
 
             this.nowUser = user;
+            create();
+
         } catch (Exception error) {
             Notification noti1 = new Notification("Please Login");
             noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -191,7 +213,6 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
             noti1.setDuration(3000);
             beforeEnterEvent.rerouteTo(LoginPage.class);
         }
-
     }
 
     public void displayAllPost(List<Thread> displayThread) {
@@ -246,11 +267,12 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         user.setWidth("50px");
         user.setHeight("50px");
 
-        Label nameUser = new Label(nickname);
+        Anchor nameUser = new Anchor("http://localhost:8080/view-profile/" + post.getOwnerID(), nickname);
         nameUser.setWidth("80px");
         nameUser.getStyle()
                 .set("text-align", "center")
-                .set("margin-top", "10%");
+                .set("margin-top", "10%")
+                .set("color", "white");
 
         vUserPost.add(user, nameUser); //add detail user
 
@@ -260,6 +282,30 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         vOnePost.add(vPostLayout, hButtonPost); // add all detail
 
         vAllPost.add(vOnePost);
+
+        /*-----------------------------Event Listener-----------------------------*/
+        chatBtn.addClickListener(event -> {
+            UI.getCurrent().navigate(ChatPage.class,
+                    new RouteParameters("postID", post.get_id()));
+        });
+
+        commentBtn.addClickListener(event -> {
+            UI.getCurrent().navigate(ViewPost.class,
+                    new RouteParameters("postID", post.get_id()));
+        });
+
+        likeBtn.addClickListener(event -> {
+            String res = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/likeThread/" + post.get_id())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            System.out.println(res);
+        });
+
+
     }
 
     private void createThreadInDb(String topic, String message, String tag) {
@@ -343,7 +389,9 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         }
 
         for (int i = 0; i< allThread.getData().size(); i++) {
-            if (tagID == 1 && allThread.getData().get(i).getTag().equals("สัตว์")) {
+            if (allThread.getData().get(i).getTag() == null) {
+                continue;
+            } else if (tagID == 1 && allThread.getData().get(i).getTag().equals("สัตว์")) {
                 filtered.add(allThread.getData().get(i));
             } else if (tagID == 2 && allThread.getData().get(i).getTag().equals("กีฬา")) {
                 filtered.add(allThread.getData().get(i));

@@ -24,7 +24,7 @@ import com.vaadin.flow.router.Route;
 // Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "textArea.css", themeFor = "vaadin-text-area[focus]")
 
-@Route("edit-profile")
+@Route("edit-profile/:userID")
 public class ProfileEdit extends VerticalLayout{
 
     HorizontalLayout h1 = new HorizontalLayout();

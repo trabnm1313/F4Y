@@ -19,7 +19,7 @@ import com.vaadin.flow.theme.Theme;
 // Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "components/textfield.css", themeFor = "vaadin-text-field[focus]")
 
-@Route("chat/test1")
+@Route("chat/:postID")
 public class ChatPage extends VerticalLayout {
     public ChatPage() {
         setSizeFull();

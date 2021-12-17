@@ -81,10 +81,6 @@ public class RegisterPage extends VerticalLayout {
         a1.setHeight("600px");
         a1.setWidth("600px");
 
-        Button uploadButton = new Button("Upload");
-        uploadButton.addClassName("b2");
-        uploadButton.addClassName("font");
-
         Button registerButton = new Button("Register");
         registerButton.addClassName("b1");
         registerButton.addClassName("font");
@@ -95,7 +91,7 @@ public class RegisterPage extends VerticalLayout {
 
         FormLayout f1 = new FormLayout();
 
-        v1.add(a1, uploadButton);
+        v1.add(a1);
         v2.add(usernameField, passwordField, confirmPasswordField, nameField, descriptionField, registerButton);
         v1.setAlignItems(Alignment.CENTER);
         v2.setAlignItems(Alignment.CENTER);
@@ -103,6 +99,30 @@ public class RegisterPage extends VerticalLayout {
         this.setPadding(true);
 
         this.add(f1);
+
+        /*-----------------------Event Handler--------------------*/
+        usernameField.addValueChangeListener(event -> {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byUsername/" + event.getValue())
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            System.out.println(user);
+
+            if (user != null) {
+                System.out.println("Username is invalid");
+                Notification noti1 = new Notification("Username is invalid");
+                noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                noti1.open();
+                noti1.setDuration(3000);
+                v2.remove(registerButton);
+                return;
+            } else {
+                v2.add(registerButton);
+            }
+        });
 
         registerButton.addClickListener(event -> {
             if (!passwordField.getValue().equals(confirmPasswordField.getValue())) {
