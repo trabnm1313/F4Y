@@ -1,27 +1,45 @@
 package com.example.projectview.view.main;
 
+import com.example.projectview.chat.ChatPage;
+import com.example.projectview.login.LoginPage;
+import com.example.projectview.model.Thread;
+import com.example.projectview.model.User;
+import com.example.projectview.post.PostConsumer;
+import com.example.projectview.post.ViewPost;
 import com.example.projectview.view.profile.ProfileEdit;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.data.renderer.ComponentRenderer;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.router.*;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
-import java.util.EventListener;
+import java.util.List;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -34,14 +52,22 @@ import java.util.EventListener;
 @CssImport(value = "components/selectItems.css", themeFor = "vaadin-tab")
 @CssImport(value = "components/combo-box.css", themeFor = "vaadin-combo-box-item")
 
-@Route("main")
-public class MainView extends HorizontalLayout {
+@Route("main/:userID")
+public class MainView extends HorizontalLayout implements BeforeEnterObserver {
     VerticalLayout vMenu = new VerticalLayout(); // column-menu
     VerticalLayout vAllPost = new VerticalLayout(); // column-post
     VerticalLayout vProfileAndNewPost = new VerticalLayout(); // column-profile and add post
 
+    private int selectedTagID = 0;
+    private String userID;
+    private PostConsumer allThread = new PostConsumer(); //data
+    private User nowUser; //data
 
-    public MainView() {
+    public MainView() {}
+
+    private void create() {
+        // fetch data form db and display
+        displayAllPost(filterPost(this.selectedTagID));
 
         // MENU
         Tabs views = getPrimaryNavigation();
@@ -77,7 +103,7 @@ public class MainView extends HorizontalLayout {
                 .set("overflow", "auto")
                 .set("background-color", "#ECB365")
                 .set("color", "black")
-                .set("margin-right", "3%");;
+                .set("margin-right", "3%");
 
         headerLayout.add(searchTextField, searchButton);
 
@@ -122,7 +148,7 @@ public class MainView extends HorizontalLayout {
         listTag.getElement().setAttribute("theme",
                 "custom-item-background");
 
-        Button addPostBtn = new Button("Add Post", e -> createPost(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
+        Button addPostBtn = new Button("Add Post", e -> createThreadInDb(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
         addPostBtn.getStyle()
                 .set("background-color", "#ECB365")
                 .set("color", "black");
@@ -131,11 +157,16 @@ public class MainView extends HorizontalLayout {
 
         vAddPost.add(titleField, descriptionArea, listTag);
 
-        Avatar user = new Avatar("Viu");
+        // PROFILE AND NEW POST
+        vProfileAndNewPost.setWidth("20%");
+        vProfileAndNewPost.setHeight("100%");
+        vProfileAndNewPost.setMargin(true);
+
+        Avatar user = new Avatar(nowUser.getNickname());
         user.setWidth("50px");
         user.setHeight("50px");
 
-        Label nameUser = new Label("Viu");
+        Label nameUser = new Label(nowUser.getNickname());
         nameUser.setWidth("50px");
         nameUser.getStyle()
                 .set("text-align", "center")
@@ -154,21 +185,76 @@ public class MainView extends HorizontalLayout {
 
         vProfileAndNewPost.add(vUser, editBtn, vAddPost, addPostBtn);
         add(vMenu, vAllPost, vProfileAndNewPost);
+
+        /*-----------------------------Event Listener-----------------------------*/
+        views.addSelectedChangeListener(event -> {
+            this.selectedTagID = views.getSelectedIndex();
+
+            vAllPost.removeAll();
+            displayAllPost(filterPost(this.selectedTagID));
+        });
+
+        editBtn.addClickListener(event -> {
+            UI.getCurrent().navigate(ProfileEdit.class,
+                    new RouteParameters("userID", nowUser.get_id()));
+        });
+
+        searchTextField.addValueChangeListener(event -> {
+            List<Thread> filtered = new ArrayList<>();
+            vAllPost.removeAll();
+
+            for (int i=0; i<this.allThread.getData().size(); i++){
+                if (allThread.getData().get(i).getTopic().contains(event.getValue())) {
+                    filtered.add(allThread.getData().get(i));
+                }
+            }
+            displayAllPost(filtered);
+        });
     }
 
-    private void createPost(String topic, String message, String tag) {
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+
+        try {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            this.nowUser = user;
+            create();
+
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Please Login");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            beforeEnterEvent.rerouteTo(LoginPage.class);
+        }
+    }
+
+    public void displayAllPost(List<Thread> displayThread) {
+        for (int i=0; i < displayThread.size(); i++) {
+            createPost(displayThread.get(i));
+        }
+    }
+
+    private void createPost(Thread post) {
+        String nickname = getNickname(post.getOwnerID());
 
         VerticalLayout vPostLayout = new VerticalLayout();
         vPostLayout.getStyle()
                 .set("background-color", "#064663")
                 .set("border-radius", "10px");
 
-        Label topicPost = new Label(topic);
+        Label topicPost = new Label(post.getTopic());
         topicPost.getStyle().set("font-size", "25px");
 
-        Label tagPost = new Label('#'+tag);
+        Label tagPost = new Label('#' + post.getTag());
 
-        Span description = new Span(message);
+        Span description = new Span(post.getMessage());
         description.setWidth("100%");
         description.getStyle()
                 .set("overflow", "hidden")
@@ -197,16 +283,17 @@ public class MainView extends HorizontalLayout {
         VerticalLayout vDetailPost = new VerticalLayout(); // add detail post
         VerticalLayout vOnePost = new VerticalLayout(); // add all detail in one post
 
-        Avatar user = new Avatar();
+        Avatar user = new Avatar(nickname);
         user.setWidth("50px");
         user.setHeight("50px");
         user.getStyle().set("background-color", "#ECB365");
 
-        Label nameUser = new Label();
+        Anchor nameUser = new Anchor("http://localhost:8080/view-profile/" + post.getOwnerID(), nickname);
         nameUser.setWidth("80px");
         nameUser.getStyle()
                 .set("text-align", "center")
-                .set("margin-top", "10%");
+                .set("margin-top", "10%")
+                .set("color", "white");
 
         vUserPost.add(user, nameUser); //add detail user
 
@@ -214,7 +301,66 @@ public class MainView extends HorizontalLayout {
         vDetailPost.add(topicPost, tagPost, description); // add detail post
         vPostLayout.add(vDetailPost, vUserPost); // add detail post and user
         vOnePost.add(vPostLayout, hButtonPost); // add all detail
+
         vAllPost.add(vOnePost);
+
+        /*-----------------------------Event Listener-----------------------------*/
+        chatBtn.addClickListener(event -> {
+            UI.getCurrent().navigate(ChatPage.class,
+                    new RouteParameters("postID", post.get_id()));
+        });
+
+        commentBtn.addClickListener(event -> {
+            UI.getCurrent().navigate(ViewPost.class,
+                    new RouteParameters("postID", post.get_id()));
+        });
+
+        likeBtn.addClickListener(event -> {
+            String res = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/likeThread/" + post.get_id())
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            System.out.println(res);
+        });
+
+
+    }
+
+    private void createThreadInDb(String topic, String message, String tag) {
+        Thread post = new Thread( null, this.nowUser.get_id(), topic, message, 0, false, null, tag);
+
+        String res = WebClient.create()
+                .post()
+                .uri("http://localhost:9091/createThread/")
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Mono.just(post), Thread.class)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        if (res == null) {
+            System.out.println("Error Can't Creating Post");
+            return;
+        }
+
+        vAllPost.removeAll();
+        // fetch data form db and display
+        displayAllPost(filterPost(this.selectedTagID));
+        UI.getCurrent().getPage().reload();
+    }
+
+    private String getNickname(String userID) {
+        User user = WebClient.create()
+                .get()
+                .uri("http://localhost:9090/getUser/byID/" + userID)
+                .retrieve()
+                .bodyToMono(User.class)
+                .block();
+
+        return user.getNickname();
     }
 
     private Tabs getPrimaryNavigation() {
@@ -258,4 +404,45 @@ public class MainView extends HorizontalLayout {
         return new Tab(link);
     }
 
+    private List<Thread> filterPost(int tagID) {
+        List<Thread> filtered = new ArrayList<>();
+
+        if (tagID == 0) {
+            return allThread.getData();
+        }
+
+        for (int i = 0; i< allThread.getData().size(); i++) {
+            if (allThread.getData().get(i).getTag() == null) {
+                continue;
+            } else if (tagID == 1 && allThread.getData().get(i).getTag().equals("สัตว์")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 2 && allThread.getData().get(i).getTag().equals("กีฬา")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 3 && allThread.getData().get(i).getTag().equals("การเรียน")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 4 && allThread.getData().get(i).getTag().equals("ครอบครัว")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 5 && allThread.getData().get(i).getTag().equals("การเมือง")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 6 && allThread.getData().get(i).getTag().equals("การเงิน")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 7 && allThread.getData().get(i).getTag().equals("สุขภาพ")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 8 && allThread.getData().get(i).getTag().equals("อาหาร")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 9 && allThread.getData().get(i).getTag().equals("ท่องเที่ยว")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 10 && allThread.getData().get(i).getTag().equals("รถยนต์")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 11 && allThread.getData().get(i).getTag().equals("แฟชั่น")) {
+                filtered.add(allThread.getData().get(i));
+            }  else if (tagID == 12 && allThread.getData().get(i).getTag().equals("การ์ตูน")) {
+                filtered.add(allThread.getData().get(i));
+            } else {
+                continue;
+            }
+        }
+
+        return filtered;
+    }
 }

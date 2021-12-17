@@ -1,5 +1,8 @@
 package com.example.projectview.view.profile;
 
+import com.example.projectview.login.LoginPage;
+import com.example.projectview.model.User;
+import com.example.projectview.view.main.MainView;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -11,6 +14,7 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
+import org.springframework.web.reactive.function.client.WebClient;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -34,7 +38,11 @@ public class ProfileView extends VerticalLayout {
         vDetailProfile.getStyle().set("padding-top", "20%");
         VerticalLayout vAvatar = new VerticalLayout();
 
-        Avatar avatarName = new Avatar("Viu");
+    public ProfileView() {}
+
+    private void create() {
+
+        Avatar avatarName = new Avatar(nowUser.getNickname());
         avatarName.getStyle().set("background-color", "#ECB365");
         avatarName.setHeight("300px");
         avatarName.setWidth("300px");
@@ -115,5 +123,29 @@ public class ProfileView extends VerticalLayout {
         vPostLayout.add(vDetailPost, vUserPost); // add detail post and user
         vOnePost.add(vPostLayout, hButtonPost); // add all detail
         vPost.add(vOnePost);
+    }
+
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
+        userID = beforeEnterEvent.getRouteParameters().get("userID").get();
+
+        try {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byID/" + userID)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            System.out.println(user);
+            this.nowUser = user;
+            create();
+
+        } catch (Exception error) {
+            Notification noti1 = new Notification("Profile Not Found");
+            noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+            noti1.open();
+            noti1.setDuration(3000);
+            beforeEnterEvent.rerouteTo(MainView.class);
+        }
     }
 }

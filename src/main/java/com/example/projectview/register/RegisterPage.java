@@ -1,17 +1,26 @@
 package com.example.projectview.register;
 
+import com.example.projectview.model.User;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.formlayout.FormLayout;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import org.springframework.http.MediaType;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
@@ -72,10 +81,6 @@ public class RegisterPage extends VerticalLayout {
         a1.setHeight("600px");
         a1.setWidth("600px");
 
-        Button uploadButton = new Button("Upload");
-        uploadButton.addClassName("b2");
-        uploadButton.addClassName("font");
-
         Button registerButton = new Button("Register");
         registerButton.addClassName("b1");
         registerButton.addClassName("font");
@@ -86,7 +91,7 @@ public class RegisterPage extends VerticalLayout {
 
         FormLayout f1 = new FormLayout();
 
-        v1.add(a1, uploadButton);
+        v1.add(a1);
         v2.add(usernameField, passwordField, confirmPasswordField, nameField, descriptionField, registerButton);
         v1.setAlignItems(Alignment.CENTER);
         v2.setAlignItems(Alignment.CENTER);
@@ -95,8 +100,57 @@ public class RegisterPage extends VerticalLayout {
 
         this.add(f1);
 
+        /*-----------------------Event Handler--------------------*/
+        usernameField.addValueChangeListener(event -> {
+            User user = WebClient.create()
+                    .get()
+                    .uri("http://localhost:9090/getUser/byUsername/" + event.getValue())
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            System.out.println(user);
+
+            if (user != null) {
+                System.out.println("Username is invalid");
+                Notification noti1 = new Notification("Username is invalid");
+                noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                noti1.open();
+                noti1.setDuration(3000);
+                v2.remove(registerButton);
+                return;
+            } else {
+                v2.add(registerButton);
+            }
+        });
+
         registerButton.addClickListener(event -> {
-            UI.getCurrent().navigate("login");
+            if (!passwordField.getValue().equals(confirmPasswordField.getValue())) {
+                Notification noti1 = new Notification("Password not match");
+                noti1.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                noti1.open();
+                noti1.setDuration(3000);
+                return;
+            }
+
+            User user = new User(
+                    null,
+                    usernameField.getValue(),
+                    passwordField.getValue(),
+                    nameField.getValue(),
+                    descriptionField.getValue());
+
+            User res = WebClient.create()
+                    .post()
+                    .uri("http://localhost:9091/signup")
+                    .body(Mono.just(user), User.class)
+                    .retrieve()
+                    .bodyToMono(User.class)
+                    .block();
+
+            System.out.println(res.getUsername());
+
+            UI.getCurrent().navigate("main");
         });
     }
 }

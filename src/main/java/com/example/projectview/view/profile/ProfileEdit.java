@@ -36,7 +36,7 @@ public class ProfileEdit extends VerticalLayout implements BeforeEnterObserver {
     TextArea description;
     PasswordField password, confirmPassword;
     User nowUser;
-
+  
     public ProfileEdit() {
         getStyle().set("padding-top", "5%");
 
