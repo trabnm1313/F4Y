@@ -1,264 +1,221 @@
 package com.example.projectview.view.main;
 
-import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.combobox.ComboBox;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.Tabs;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
-import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.theme.Theme;
 
-import java.util.Arrays;
 import java.util.Date;
-import java.util.List;
 
 // Import font Prompt
 @StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
 // Import a style sheet
 @CssImport(value = "mainView.css")
-// Import a style sheet into the local scope of the TextField component
 @CssImport(value = "textfield.css", themeFor = "vaadin-text-field")
-// Import a style sheet into the local scope of the TextField onFocus component
 @CssImport(value = "textfield.css", themeFor = "vaadin-text-field[focus]")
 @CssImport(value = "selectItems.css", themeFor = "vaadin-tab")
 @CssImport(value = "my-dialog.css", themeFor = "vaadin-dialog-overlay")
 
 @Route("main")
-//@Theme(themeFolder = "my-theme")
 public class MainView extends HorizontalLayout {
-    VerticalLayout v1 = new VerticalLayout(); //column-menu
-    VerticalLayout v2 = new VerticalLayout(); //column-post
-    VerticalLayout v3 = new VerticalLayout(); // column-profile
-    Person ownerPer = new Person(null, "Viu", "12374", "Viu", "ไอสัส", "Dec 12");
-    Grid<Post> grid = new Grid<>();
+    VerticalLayout vMenu = new VerticalLayout(); // column-menu
+    VerticalLayout vAllPost = new VerticalLayout(); // column-post
+    VerticalLayout vProfileAndNewPost = new VerticalLayout(); // column-profile and add post
+
+    Person person = new Person(null, "Viu", "12374", "Viu", "ไอสัส", "Dec 12");
 
     public MainView() {
 
-        VerticalLayout v2_1 = new VerticalLayout(); // post
-        VerticalLayout v3_1 = new VerticalLayout(); // add btn
-        HorizontalLayout h1 = new HorizontalLayout(); // all btn for post
-        HorizontalLayout hUser = new HorizontalLayout();
-        Button likeBtn, commentBtn, chatBtn, addPostBtn, editBtn;
-        TextField t1 = new TextField("Test");
-
-        Label l1 = new Label("Menu1");
-        l1.addClassName("font");
-        Label l2 = new Label("Menu2");
-        l2.addClassName("font");
-        Label l3 = new Label("Menu3");
-        l3.addClassName("font");
-        Label l4 = new Label("Menu4");
-        l4.addClassName("font");
-        Label l5 = new Label("Menu5");
-        l5.addClassName("font");
-
+        // MENU
         Tabs views = getPrimaryNavigation();
 
-        v1.setWidth("20%");
-        v1.setHeight("100%");
-        v1.setMargin(true);
-        v1.getStyle().set("background-color", "#064663");
-        v1.getStyle().set("border-radius", "10px");
+        vMenu.setWidth("20%");
+        vMenu.setHeight("100%");
+        vMenu.setMargin(true);
+        vMenu.getStyle()
+                .set("background-color", "#064663")
+                .set("border-radius", "10px")
+                .set("margin-left","3%").set("margin-top", "2%");
 
-
-        Dialog dialog = new Dialog();
-        dialog.getElement().setAttribute("aria-label", "Add post");
-
-        VerticalLayout dialogLayout = createDialogLayout(dialog);
-        dialog.add(dialogLayout);
-        dialog.setModal(false);
-        dialog.setDraggable(true);
-
-        addPostBtn = new Button("Add Post", e -> dialog.open());
-        addPostBtn.getStyle().set("background-color", "#ECB365");
-        addPostBtn.getStyle().set("color", "black");
-        addPostBtn.setWidth("100%");
-
-
-        v3.getStyle().set("background-color", "#064663");
-        v3.getStyle().set("border-radius", "10px");
-
-        v3_1.setWidth("20%");
-        v3_1.setHeight("100%");
-        v3_1.setMargin(true);
-
-        Span formatSpan1 = new Span("Forum For U");
-        formatSpan1.setWidthFull();
-        formatSpan1.getStyle()
+        Span titleMenu = new Span("Forum For U");
+        titleMenu.setWidthFull();
+        titleMenu.getStyle()
                 .set("text-align", "center")
                 .set("font-size", "20px")
-                .set("color", "#ECB365");;
+                .set("color", "#ECB365");
+
+        HorizontalLayout headerLayout = new HorizontalLayout();
+        headerLayout.setWidthFull();
+        headerLayout.getStyle().set("background-color", "#041C32");
+
+        TextField searchTextField = new TextField();
+        searchTextField.getStyle()
+                .set("overflow", "auto")
+                .set("background-color", "#041C32")
+                .set("margin-left", "10%");
+        searchTextField.setPlaceholder("Search");
+
+        Button searchButton = new Button(new Icon(VaadinIcon.SEARCH));
+        searchButton.getStyle()
+                .set("overflow", "auto")
+                .set("background-color", "#ECB365")
+                .set("color", "black")
+                .set("margin-right", "3%");;
+
+        headerLayout.add(searchTextField, searchButton);
+
+        vMenu.add(titleMenu, headerLayout,views);
+
+        // POST
+        vAllPost.getStyle().set("overflow", "auto");
+        vAllPost.setHeight("700px");
+
+        VerticalLayout vUser = new VerticalLayout(); // layout profile
+        vUser.getStyle()
+                .set("background-color", "#064663")
+                .set("border-radius", "10px");
+
+        VerticalLayout vAddPost = new VerticalLayout(); // layout for add new post
+        vAddPost.getStyle()
+                .set("background-color", "#064663")
+                .set("border-radius", "10px");
+
+        TextField titleField = new TextField("Title");
+        titleField.setMaxLength(50);
+
+        TextArea descriptionArea = new TextArea("Description");
+        descriptionArea.setMaxLength(500);
+
+        ComboBox<String> listTag = new ComboBox<String>("Tag");
+        listTag.setItems("สัตว์","การเรียน","ครอบครัว","การเมือง","การเงิน","สุขภาพ","อาหาร","ท่องเที่ยว","ท่องเที่ยว","รถยนต์","แฟชั่น","การ์ตูน");
+
+        Button addPostBtn = new Button("Add Post", e -> createPost(titleField.getValue(), descriptionArea.getValue(), listTag.getValue()));
+        addPostBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        addPostBtn.setWidth("100%");
+
+        vAddPost.add(titleField, descriptionArea, listTag);
+
+        // PROFILE AND NEW POST
+        vProfileAndNewPost.setWidth("20%");
+        vProfileAndNewPost.setHeight("100%");
+        vProfileAndNewPost.setMargin(true);
 
         Avatar user = new Avatar("Viu");
         user.setWidth("50px");
         user.setHeight("50px");
+
         Label nameUser = new Label("Viu");
         nameUser.setWidth("50px");
-        nameUser.getStyle().set("text-align", "center")
-                .set("margin-top", "5%");
-        editBtn = new Button("Edit");
-        editBtn.getStyle().set("background-color", "#ECB365");
-        editBtn.getStyle().set("color", "black");
-        hUser.add(user, nameUser, editBtn);
+        nameUser.getStyle()
+                .set("text-align", "center")
+                .set("margin-top", "10%");
 
-        v1.add(formatSpan1, views);
-        v3.add(hUser);
-        v3_1.add(v3, addPostBtn);
+        Button editBtn = new Button("Edit profile",new Icon(VaadinIcon.EDIT));
+        editBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        editBtn.setWidth("100%");
 
-        add(v1, v2, v3_1);
+        HorizontalLayout hDetailUser = new HorizontalLayout(); //layout user in profile
+        hDetailUser.add(user, nameUser); // add detail profile
+        vUser.add(hDetailUser); // add detail profile to layout profile
 
+        vProfileAndNewPost.add(vUser, editBtn, vAddPost, addPostBtn);
+        add(vMenu, vAllPost, vProfileAndNewPost);
     }
 
-    private void createPost(String topic, String message) {
+    private void createPost(String topic, String message, String tag) {
 
-        VerticalLayout v2_1 = new VerticalLayout();
-        v2_1.setHeight("200px");
-        v2_1.getStyle().set("background-color", "#064663");
-        v2_1.getStyle().set("border-radius", "10px");
+        VerticalLayout vPostLayout = new VerticalLayout();
+        vPostLayout.getStyle()
+                .set("background-color", "#064663")
+                .set("border-radius", "10px");
 
-        Label namePost = new Label(topic);
-        namePost.getStyle().set("font-size", "25px");
-        Text des = new Text(message);
+        Label topicPost = new Label(topic);
+        topicPost.getStyle().set("font-size", "25px");
 
+        Label tagPost = new Label('#'+tag);
 
-        Button likeBtn, commentBtn, chatBtn;
-        likeBtn = new Button("Like");
-        likeBtn.getStyle().set("background-color", "#ECB365");
-        likeBtn.getStyle().set("color", "black");
-        commentBtn = new Button("Comment");
-        commentBtn.getStyle().set("background-color", "#ECB365");
-        commentBtn.getStyle().set("color", "black");
-        chatBtn = new Button("Chat");
-        chatBtn.getStyle().set("background-color", "#ECB365");
-        chatBtn.getStyle().set("color", "black");
+        Span description = new Span(message);
+        description.setWidth("100%");
+        description.getStyle()
+                .set("overflow", "hidden")
+                .set("text-overflow", "ellipsis");
 
-        HorizontalLayout h1 = new HorizontalLayout();
-        VerticalLayout pv1 = new VerticalLayout();
-        VerticalLayout fv1 = new VerticalLayout();
-        HorizontalLayout vUser = new HorizontalLayout();
+        Button likeBtn = new Button("Like", new Icon(VaadinIcon.HEART));
+        likeBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        likeBtn.setIconAfterText(true);
 
-        Avatar user = new Avatar(ownerPer.getNickname());
+        Button commentBtn = new Button("Comment", new Icon(VaadinIcon.COMMENT_O));
+        commentBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        commentBtn.setIconAfterText(true);
+
+        Button chatBtn = new Button("Chat", new Icon(VaadinIcon.CHAT));
+        chatBtn.getStyle()
+                .set("background-color", "#ECB365")
+                .set("color", "black");
+        chatBtn.setIconAfterText(true);
+
+        HorizontalLayout hButtonPost = new HorizontalLayout(); // add button for post
+        HorizontalLayout vUserPost = new HorizontalLayout(); // add user post
+        VerticalLayout vDetailPost = new VerticalLayout(); // add detail post
+        VerticalLayout vOnePost = new VerticalLayout(); // add all detail in one post
+
+        Avatar user = new Avatar(person.getNickname());
         user.setWidth("50px");
         user.setHeight("50px");
-        Label nameUser = new Label(ownerPer.getNickname());
+
+        Label nameUser = new Label(person.getNickname());
         nameUser.setWidth("80px");
-        nameUser.getStyle().set("text-align", "center")
+        nameUser.getStyle()
+                .set("text-align", "center")
                 .set("margin-top", "10%");
-        vUser.add(user, nameUser);
 
-        h1.add(likeBtn, commentBtn, chatBtn);
-        pv1.add(namePost, des);
-        v2_1.add(pv1, vUser);
-        fv1.add(v2_1, h1);
-        v2.add(fv1);
+        vUserPost.add(user, nameUser); //add detail user
+
+        hButtonPost.add(likeBtn, commentBtn, chatBtn); // add button
+        vDetailPost.add(topicPost, tagPost, description); // add detail post
+        vPostLayout.add(vDetailPost, vUserPost); // add detail post and user
+        vOnePost.add(vPostLayout, hButtonPost); // add all detail
+        vAllPost.add(vOnePost);
     }
 
-
-    private static Person createPerson(String _id, String username, String password, String nickname, String description) {
-        Person p = new Person();
-        p.set_id(_id);
-        p.setUsername(username);
-        p.setPassword(password);
-        p.setNickname(nickname);
-        p.setDescription(description);
-
-        return p;
-    }
-
-    private static Post createPost(String _id, String ownerID, String topic, String message, Date timeStamp) {
-        Post p = new Post();
-        p.set_id(_id);
-        p.setOwnerID(ownerID);
-        p.setTopic(topic);
-        p.setMessage(message);
-        p.setTimeStamp(timeStamp);
-        return p;
-    }
-
-    private VerticalLayout createDialogLayout(Dialog dialog) {
-        H2 headline = new H2("Add Post");
-        headline.getStyle().set("margin", "0").set("font-size", "1.5em")
-                .set("font-weight", "bold").set("color","white");
-        HorizontalLayout header = new HorizontalLayout(headline);
-        header.getElement().getClassList().add("draggable");
-        header.setSpacing(false);
-        header.getStyle()
-                .set("border-bottom", "2px solid #041C32")
-                .set("cursor", "move");
-        // Use negative margins to make draggable header stretch over full width,
-        // covering the padding of the dialog
-        header.getStyle()
-                .set("padding", "var(--lumo-space-m) var(--lumo-space-l)")
-                .set("margin",
-                        "calc(var(--lumo-space-s) * -1) calc(var(--lumo-space-l) * -1) 0");
-
-        TextField titleField = new TextField("Title");
-        titleField.setMaxLength(50);
-        TextArea descriptionArea = new TextArea("Description");
-        descriptionArea.setMaxLength(100);
-        VerticalLayout fieldLayout = new VerticalLayout(titleField,
-                descriptionArea);
-        fieldLayout.setSpacing(false);
-        fieldLayout.setPadding(false);
-        fieldLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
-        fieldLayout.getStyle().set("background-color", "#04293A");
-
-        Button cancelButton = new Button("Cancel", e -> dialog.close());
-        cancelButton.getStyle().set("background-color", "#ECB365");
-        cancelButton.getStyle().set("color", "black");
-        Button saveButton = new Button("Add note", e -> dialog.close());
-        saveButton.getStyle().set("background-color", "#ECB365");
-        saveButton.getStyle().set("color", "black");
-        saveButton.addClickListener(buttonClickEvent -> createPost(titleField.getValue(), descriptionArea.getValue()));
-        HorizontalLayout buttonLayout = new HorizontalLayout(cancelButton,
-                saveButton);
-        buttonLayout
-                .setJustifyContentMode(FlexComponent.JustifyContentMode.END);
-
-        VerticalLayout dialogLayout = new VerticalLayout(header, fieldLayout,
-                buttonLayout);
-        dialogLayout.setPadding(false);
-        dialogLayout.setAlignItems(FlexComponent.Alignment.STRETCH);
-        dialogLayout.getStyle().set("width", "300px").set("max-width", "100%").set("background-color", "#04293A");
-
-        return dialogLayout;
-    }
     private Tabs getPrimaryNavigation() {
         Tabs tabs = new Tabs();
         tabs.setWidth("100%");
         tabs.add(
-                createTab(VaadinIcon.DASHBOARD, "แนะนำ"),
-                createTab(VaadinIcon.DASHBOARD, "สัตว์"),
-                createTab(VaadinIcon.CART, "กีฬา"),
-                createTab(VaadinIcon.USER_HEART, "การเรียน"),
-                createTab(VaadinIcon.PACKAGE, "ครอบครัว"),
-                createTab(VaadinIcon.RECORDS, "การเมือง"),
-                createTab(VaadinIcon.LIST, "การเงิน"),
-                createTab(VaadinIcon.CHART, "สุขภาพ"),
-                createTab(VaadinIcon.DASHBOARD, "อาหาร"),
-                createTab(VaadinIcon.CART, "ท่องเที่ยว"),
-                createTab(VaadinIcon.USER_HEART, "รถยนต์"),
-                createTab(VaadinIcon.PACKAGE, "แฟชั่น"),
-                createTab(VaadinIcon.RECORDS, "การ์ตูน")
+                createTab(VaadinIcon.ASTERISK, "แนะนำ"),
+                createTab(VaadinIcon.TWITTER, "สัตว์"),
+                createTab(VaadinIcon.HANDS_UP, "กีฬา"),
+                createTab(VaadinIcon.BOOK, "การเรียน"),
+                createTab(VaadinIcon.FAMILY, "ครอบครัว"),
+                createTab(VaadinIcon.PYRAMID_CHART, "การเมือง"),
+                createTab(VaadinIcon.MONEY, "การเงิน"),
+                createTab(VaadinIcon.USER_HEART, "สุขภาพ"),
+                createTab(VaadinIcon.CROSS_CUTLERY, "อาหาร"),
+                createTab(VaadinIcon.AIRPLANE, "ท่องเที่ยว"),
+                createTab(VaadinIcon.CAR, "รถยนต์"),
+                createTab(VaadinIcon.GLASSES, "แฟชั่น"),
+                createTab(VaadinIcon.MONEY, "การ์ตูน")
         );
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         tabs.setSelectedIndex(0);
