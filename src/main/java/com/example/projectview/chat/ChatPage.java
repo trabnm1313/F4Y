@@ -146,12 +146,12 @@ public class ChatPage extends VerticalLayout implements BeforeEnterObserver {
         collaborationMessageList.setSubmitter(activationContext -> {
             button.setEnabled(true);
             Registration registration = button.addClickListener(event -> {
-                activationContext.appendMessage(field.getValue());
+                if(field.getValue() != "") activationContext.appendMessage(field.getValue());
                 field.setValue("");
             });
             Registration registration2 = field.addKeyDownListener(E -> {
                 if(E.getKey().getKeys().equals(Key.ENTER.getKeys())){
-                    activationContext.appendMessage(field.getValue());
+                    if(field.getValue() != "") activationContext.appendMessage(field.getValue());
                     field.setValue("");
                 }
             });
