@@ -10,19 +10,35 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
-@Route("Post/id1")
+@StyleSheet("https://fonts.googleapis.com/css2?family=Prompt")
+@CssImport(value = "mainView.css")
+@Route("post/id1")
 public class ViewPost extends HorizontalLayout {
-
+    String tag = "ลากหัวคมๆ";
     public ViewPost() {
         setSizeFull();
         setPadding(false);
         setSpacing(false);
         setAlignItems(Alignment.CENTER);
 
+        VerticalLayout headerLayout = new VerticalLayout();
+        headerLayout.addClassNames("header-Text-with-padding", "font");
+
         Label titleLabel = new Label("Post 01");
-        titleLabel.addClassNames("header-Text-with-padding", "font");
-        titleLabel.setHeight("20%");
-        titleLabel.setWidthFull();
+        titleLabel.setSizeFull();
+
+        Label tagLabel = new Label("#"+tag);
+        tagLabel.addClassNames("font", "header-Text-Post");
+        tagLabel.setSizeFull();
+
+        VerticalLayout descriptionLayout = new VerticalLayout();
+        descriptionLayout.addClassNames("description-with-padding", "font");
+        descriptionLayout.setHeight("75%");
+
+        Label descriptionLabel = new Label("Lorem");
+        descriptionLabel.setSizeFull();
+
+        descriptionLayout.add(descriptionLabel);
 
         Label c1 = new Label("อย่างหล่อ");
         c1.addClassNames("message");
@@ -30,46 +46,66 @@ public class ViewPost extends HorizontalLayout {
         Label c2 = new Label("อย่างหล่อ");
         c2.addClassNames("message");
 
+        Label c3 = new Label("อย่างหล่อ");
+        c3.addClassNames("message");
+
+        Label c4 = new Label("อย่างหล่อ");
+        c4.addClassNames("message");
+
+        Label c5 = new Label("อย่างหล่อ");
+        c5.addClassNames("message");
+
+        Label c6 = new Label("อย่างหล่อ");
+        c6.addClassNames("message");
+
         TextField commentField = new TextField();
         commentField.setWidthFull();
         commentField.setPlaceholder("แสดงความคิดเห็น...");
+        commentField.setClassName("font");
 
         Footer comment = new Footer();
         comment.setSizeFull();
 
-        Label descriptionLabel = new Label("Lorem");
-        descriptionLabel.addClassNames("description-with-padding", "font");
-        descriptionLabel.setSizeFull();
-
         Button sendButton = new Button("Send");
         sendButton.addClassName("b1");
+        sendButton.addClassName("font");
 
-        VerticalLayout v1 = new VerticalLayout();
-        v1.setHeight("90%");
-        v1.setWidth("60%");
-        v1.setPadding(true);
-        v1.setSpacing(false);
+        VerticalLayout vPost = new VerticalLayout();
+        vPost.setHeight("90%");
+        vPost.setWidth("60%");
+        vPost.setPadding(true);
+        vPost.setSpacing(false);
+        vPost.getStyle().set("margin-left", "5%");
 
-        VerticalLayout v2 = new VerticalLayout();
-        v2.addClassName("comment-panel");
-        v2.setAlignItems(Alignment.CENTER);
-        v2.setHeight("80%");
-        v2.setWidth("40%");
-        v2.setPadding(true);
-        v2.setSpacing(true);
+        VerticalLayout vAllComment = new VerticalLayout();
+        vAllComment.addClassName("comment-panel");
+        vAllComment.setAlignItems(Alignment.CENTER);
+        vAllComment.setHeight("80%");
+        vAllComment.setWidth("40%");
+        vAllComment.setPadding(true);
+        vAllComment.setSpacing(true);
 
-        VerticalLayout v3 = new VerticalLayout();
-        v3.setSizeFull();
+        VerticalLayout vTextComment = new VerticalLayout();
+        vTextComment.getStyle().set("overflow", "auto");
+        vTextComment.setHeight("600px");
 
-        HorizontalLayout h1 = new HorizontalLayout();
-        h1.setWidth("80%");
+        HorizontalLayout hSendComment = new HorizontalLayout();
+        hSendComment.setWidth("80%");
 
-        v3.add(c1, c2);
+        Button chatButton = new Button("Chat");
+        chatButton.addClassName("b1");
+        chatButton.addClassName("font");
+
+        vTextComment.add(c1, c2, c3, c4, c5, c6);
         comment.add(commentField);
-        h1.add(comment, sendButton);
-        v1.add(titleLabel, descriptionLabel);
-        v2.add(v3, h1);
+        hSendComment.add(comment, sendButton);
+        headerLayout.add(titleLabel, tagLabel);
+        vPost.add(headerLayout, descriptionLayout, chatButton);
+        vAllComment.add(vTextComment, hSendComment);
 
-        this.add(v1, v2);
+        this.add(vPost, vAllComment);
     }
+
+
+
 }
