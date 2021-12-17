@@ -17,6 +17,8 @@ public class User implements Serializable {
     String nickname;
     String description;
 
+    public User() {}
+
     public User(String _id, String username, String password, String nickname, String description) {
         this._id = _id;
         this.username = username;

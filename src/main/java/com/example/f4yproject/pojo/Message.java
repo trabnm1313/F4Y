@@ -23,6 +23,8 @@ public class Message implements Serializable {
     String text;
     Instant timeStamp;
 
+    public Message() {}
+
     public Message(String _id, String userID, String topic, String text, Instant timeStamp) {
         this._id = _id;
         this.userID = userID;

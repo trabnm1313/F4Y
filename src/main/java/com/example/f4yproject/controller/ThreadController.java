@@ -39,12 +39,11 @@ public class ThreadController {
         thread.setLike(thread.getLike() + 1);
         Thread out = WebClient.create()
                 .put()
-                .uri("http://localhost:8091/updateThread")
+                .uri("http://localhost:9091/updateThread")
                 .body(Mono.just(thread), Thread.class)
                 .retrieve()
                 .bodyToMono(Thread.class)
                 .block();
-        System.out.println(out.getLike());
         return out.getLike();
     }
 }
