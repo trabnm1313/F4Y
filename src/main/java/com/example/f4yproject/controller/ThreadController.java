@@ -44,7 +44,7 @@ public class ThreadController {
                 .retrieve()
                 .bodyToMono(Thread.class)
                 .block();
-        System.out.println(thread.getLike());
-        return thread.getLike();
+        System.out.println(out.getLike());
+        return out.getLike();
     }
 }
