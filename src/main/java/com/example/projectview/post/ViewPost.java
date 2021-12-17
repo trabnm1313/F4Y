@@ -89,19 +89,6 @@ public class ViewPost extends HorizontalLayout implements BeforeEnterObserver {
         sendButton.addClassName("b1");
         sendButton.addClassName("font");
 
-        sendButton.addClickListener(E -> {
-            Comment newComment = new Comment(null, threadNow.get_id(), userNow.get_id(), commentField.getValue(), false, new Date());
-            if(commentField.getValue() != "") WebClient.create().post().uri("http://localhost:9091/createComment").body(Mono.just(newComment), Comment.class).retrieve().bodyToMono(Comment.class).block();
-            commentField.setValue("");
-        });
-        commentField.addKeyDownListener(E -> {
-            if(E.getKey().getKeys().equals(Key.ENTER.getKeys())){
-                Comment newComment = new Comment(null, threadNow.get_id(), userNow.get_id(), commentField.getValue(), false, new Date());
-                if(commentField.getValue() != "") WebClient.create().post().uri("http://localhost:9091/createComment").body(Mono.just(newComment), Comment.class).retrieve().bodyToMono(Comment.class).block();
-                commentField.setValue("");
-            }
-        });
-
         VerticalLayout vPost = new VerticalLayout();
         vPost.setHeight("90%");
         vPost.setWidth("60%");
@@ -149,6 +136,47 @@ public class ViewPost extends HorizontalLayout implements BeforeEnterObserver {
         headerLayout.add(titleLabel, tagLabel);
         vPost.add(headerLayout, descriptionLayout, chatButton);
         vAllComment.add(vTextComment, hSendComment);
+
+        sendButton.addClickListener(E -> {
+            Comment newComment = new Comment(null, threadNow.get_id(), userNow.get_id(), commentField.getValue(), false, new Date());
+            if(commentField.getValue() != ""){
+                WebClient.create().post().uri("http://localhost:9091/createComment").body(Mono.just(newComment), Comment.class).retrieve().bodyToMono(Comment.class).block();
+                VerticalLayout chatBox = new VerticalLayout();
+
+                //User
+                Label userLabel = new Label(userNow.getNickname());
+                userLabel.addClassName("font");
+
+                //Message
+                Label messageLabel = new Label(newComment.getMessage());
+                messageLabel.addClassName("message");
+
+                chatBox.add(userLabel, messageLabel);
+                vTextComment.add(chatBox);
+            }
+            commentField.setValue("");
+        });
+        commentField.addKeyDownListener(E -> {
+            if(E.getKey().getKeys().equals(Key.ENTER.getKeys())){
+                Comment newComment = new Comment(null, threadNow.get_id(), userNow.get_id(), commentField.getValue(), false, new Date());
+                if(commentField.getValue() != ""){
+                    WebClient.create().post().uri("http://localhost:9091/createComment").body(Mono.just(newComment), Comment.class).retrieve().bodyToMono(Comment.class).block();
+                    VerticalLayout chatBox = new VerticalLayout();
+
+                    //User
+                    Label userLabel = new Label(userNow.getNickname());
+                    userLabel.addClassName("font");
+
+                    //Message
+                    Label messageLabel = new Label(newComment.getMessage());
+                    messageLabel.addClassName("message");
+
+                    chatBox.add(userLabel, messageLabel);
+                    vTextComment.add(chatBox);
+                }
+                commentField.setValue("");
+            }
+        });
 
         this.add(vPost, vAllComment);
     }
