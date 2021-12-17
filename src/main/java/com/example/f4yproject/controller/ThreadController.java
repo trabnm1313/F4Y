@@ -33,7 +33,7 @@ public class ThreadController {
         return thread;
     }
 
-    @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/likeThread/{id}", method = RequestMethod.GET)
     public Integer likeThread(@PathVariable("id") String id) {
         Thread thread = threadService.getThreadByID(id);
         thread.setLike(thread.getLike() + 1);
