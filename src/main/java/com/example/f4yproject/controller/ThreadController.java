@@ -21,12 +21,12 @@ public class ThreadController {
         return ResponseEntity.ok(threadService.createThread(thread));
     }
 
-    @RequestMapping(value = "/updateThread", method = RequestMethod.POST)
+    @RequestMapping(value = "/updateThread", method = RequestMethod.PUT)
     public ResponseEntity<?> updateThread(@RequestBody Thread thread) {
         return ResponseEntity.ok(threadService.updateThread(thread));
     }
 
-    @RequestMapping(value = "/deleteThread", method = RequestMethod.POST)
+    @RequestMapping(value = "/deleteThread", method = RequestMethod.DELETE)
     public boolean deleteThread(@RequestBody Thread thread) {
         return threadService.deleteThread(thread);
     }

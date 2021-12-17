@@ -20,12 +20,12 @@ public class CommentController {
         return ResponseEntity.ok(commentService.createComment(comment));
     }
 
-    @RequestMapping(value = "/updateComment", method = RequestMethod.POST)
+    @RequestMapping(value = "/updateComment", method = RequestMethod.PUT)
     public ResponseEntity<?> updateComment(@RequestBody Comment comment) {
         return ResponseEntity.ok(commentService.updateComment(comment));
     }
 
-    @RequestMapping(value = "/deleteComment", method = RequestMethod.POST)
+    @RequestMapping(value = "/deleteComment", method = RequestMethod.DELETE)
     public boolean deleteComment(@RequestBody Comment comment) {
         return commentService.deleteComment(comment);
     }

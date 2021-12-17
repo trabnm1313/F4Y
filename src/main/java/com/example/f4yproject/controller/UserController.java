@@ -26,12 +26,12 @@ public class UserController {
         return userService.login(singleValue.get("username"), singleValue.get("password"));
     }
 
-    @RequestMapping(value = "/updateUser", method = RequestMethod.POST)
+    @RequestMapping(value = "/updateUser", method = RequestMethod.PUT)
     public ResponseEntity<?> updateUser(@RequestBody User user) {
         return ResponseEntity.ok(userService.updateUser(user));
     }
 
-    @RequestMapping(value = "/deleteUser", method = RequestMethod.POST)
+    @RequestMapping(value = "/deleteUser", method = RequestMethod.DELETE)
     public boolean deleteUser(@RequestBody User user) {
         return userService.deleteUser(user);
     }
