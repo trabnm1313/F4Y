@@ -14,9 +14,10 @@ public class ThreadController {
     private ThreadService threadService;
 
     @RequestMapping(value = "/getThreads", method = RequestMethod.GET)
-    public void getThreads() {
+    public List<Thread> getThreads() {
         List<Thread> threads = threadService.getAllThread();
         System.out.println(threads.toString());
+        return threads;
     }
 
     @RequestMapping(value = "/getThread/byTopic/{id}", method = RequestMethod.GET)
