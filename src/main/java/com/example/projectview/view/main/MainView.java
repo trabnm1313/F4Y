@@ -3,9 +3,11 @@ package com.example.projectview.view.main;
 import com.example.projectview.login.LoginPage;
 import com.example.projectview.model.Thread;
 import com.example.projectview.model.User;
+import com.example.projectview.post.PostConsumer;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.avatar.Avatar;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -27,6 +29,8 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -53,12 +57,11 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
 
     private int selectedTagID = 0;
     private String userID;
-    private List<Thread> allThread; //data
+    private PostConsumer allThread = new PostConsumer(); //data
     private User nowUser; //data
 
     public MainView() {
         // fetch data form db and display
-        getAllPost();
         displayAllPost(filterPost(this.selectedTagID));
 
         // MENU
@@ -95,7 +98,7 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                 .set("overflow", "auto")
                 .set("background-color", "#ECB365")
                 .set("color", "black")
-                .set("margin-right", "3%");;
+                .set("margin-right", "3%");
 
         headerLayout.add(searchTextField, searchButton);
 
@@ -191,23 +194,6 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
 
     }
 
-    public void getAllPost() {
-        JsonNode out = WebClient.create()
-                .get()
-                .uri("http://localhost:9090/getThreads")
-                .retrieve()
-                .bodyToMono(JsonNode.class)
-                .block();
-
-        ObjectMapper mapper = new ObjectMapper();
-        this.allThread = mapper.convertValue(
-                out,
-                new TypeReference<List<Thread>>() {}
-        );
-
-        Collections.reverse(this.allThread);
-    }
-
     public void displayAllPost(List<Thread> displayThread) {
         for (int i=0; i < displayThread.size(); i++) {
             createPost(displayThread.get(i));
@@ -288,18 +274,15 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
                 .bodyToMono(String.class)
                 .block();
 
-        System.out.println(res);
-
         if (res == null) {
             System.out.println("Error Can't Creating Post");
             return;
         }
 
         vAllPost.removeAll();
-
         // fetch data form db and display
-        getAllPost();
         displayAllPost(filterPost(this.selectedTagID));
+        UI.getCurrent().getPage().reload();
     }
 
     private String getNickname(String userID) {
@@ -356,34 +339,34 @@ public class MainView extends HorizontalLayout implements BeforeEnterObserver {
         List<Thread> filtered = new ArrayList<>();
 
         if (tagID == 0) {
-            return this.allThread;
+            return allThread.getData();
         }
 
-        for (int i=0; i<this.allThread.size(); i++) {
-            if (tagID == 1 && this.allThread.get(i).getTag().equals("สัตว์")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 2 && this.allThread.get(i).getTag().equals("กีฬา")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 3 && this.allThread.get(i).getTag().equals("การเรียน")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 4 && this.allThread.get(i).getTag().equals("ครอบครัว")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 5 && this.allThread.get(i).getTag().equals("การเมือง")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 6 && this.allThread.get(i).getTag().equals("การเงิน")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 7 && this.allThread.get(i).getTag().equals("สุขภาพ")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 8 && this.allThread.get(i).getTag().equals("อาหาร")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 9 && this.allThread.get(i).getTag().equals("ท่องเที่ยว")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 10 && this.allThread.get(i).getTag().equals("รถยนต์")) {
-                filtered.add(this.allThread.get(i));
-            } else if (tagID == 11 && this.allThread.get(i).getTag().equals("แฟชั่น")) {
-                filtered.add(this.allThread.get(i));
-            }  else if (tagID == 12 && this.allThread.get(i).getTag().equals("การ์ตูน")) {
-                filtered.add(this.allThread.get(i));
+        for (int i = 0; i< allThread.getData().size(); i++) {
+            if (tagID == 1 && allThread.getData().get(i).getTag().equals("สัตว์")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 2 && allThread.getData().get(i).getTag().equals("กีฬา")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 3 && allThread.getData().get(i).getTag().equals("การเรียน")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 4 && allThread.getData().get(i).getTag().equals("ครอบครัว")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 5 && allThread.getData().get(i).getTag().equals("การเมือง")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 6 && allThread.getData().get(i).getTag().equals("การเงิน")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 7 && allThread.getData().get(i).getTag().equals("สุขภาพ")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 8 && allThread.getData().get(i).getTag().equals("อาหาร")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 9 && allThread.getData().get(i).getTag().equals("ท่องเที่ยว")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 10 && allThread.getData().get(i).getTag().equals("รถยนต์")) {
+                filtered.add(allThread.getData().get(i));
+            } else if (tagID == 11 && allThread.getData().get(i).getTag().equals("แฟชั่น")) {
+                filtered.add(allThread.getData().get(i));
+            }  else if (tagID == 12 && allThread.getData().get(i).getTag().equals("การ์ตูน")) {
+                filtered.add(allThread.getData().get(i));
             } else {
                 continue;
             }
